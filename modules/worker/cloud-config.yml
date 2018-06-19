@@ -1,0 +1,147 @@
+#cloud-config
+write_files:
+  - path: "/concourse/keys/worker/tsa_host_key.pub"
+    permissions: "0644"
+    owner: "root"
+    encoding: base64
+    content: ${base64encode(pub_tsa_host_key)}
+  - path: "/concourse/keys/worker/worker_key"
+    permissions: "0644"
+    owner: "root"
+    encoding: base64
+    content: ${base64encode(worker_key)}
+  - path: "/concourse/keys/worker/worker_key.pub"
+    permissions: "0644"
+    owner: "root"
+    encoding: base64
+    content: ${base64encode(pub_worker_key)}
+  - path: "/etc/awslogs/awscli.template"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [plugins]
+      cwlogs = cwlogs
+      [default]
+      region = ${region}
+  - path: "/etc/awslogs/awslogs.template"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [general]
+      state_file = /var/lib/awslogs/agent-state
+
+      [/var/log/concourse.log]
+      file = /var/log/concourse.log
+      log_group_name = ${log_group_name}
+      log_stream_name = {instance_id}
+  - path: "/etc/systemd/system/concourse.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Service for Concourse Worker
+      Requires=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      Restart=always
+      RestartSec=30s
+      TimeoutStartSec=5m
+      TimeoutStopSec=1h
+      PIDFile=/run/concourse.pid
+
+      Environment="CONCOURSE_TEAM=${worker_team}"
+      Environment="CONCOURSE_BIND_IP=0.0.0.0"
+      Environment="CONCOURSE_WORK_DIR=/concourse"
+      Environment="CONCOURSE_TSA_HOST=${tsa_host}:${tsa_port}"
+      Environment="CONCOURSE_BAGGAGECLAIM_BIND_IP=0.0.0.0"
+      Environment="CONCOURSE_BAGGAGECLAIM_LOG_LEVEL=${log_level}"
+      Environment="CONCOURSE_TSA_PUBLIC_KEY=/concourse/keys/worker/tsa_host_key.pub"
+      Environment="CONCOURSE_TSA_WORKER_PRIVATE_KEY=/concourse/keys/worker/worker_key"
+
+      ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_NAME=$(curl -L http://169.254.169.254/latest/meta-data/instance-id)"
+      ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_IP=$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4)"
+      ExecStart=/usr/local/bin/concourse worker
+
+      ExecStop=/usr/local/bin/concourse retire-worker
+      ExecStop=/bin/bash -c "while ! /usr/local/bin/concourse retire-worker | grep worker-not-found > /dev/null; do sleep 5; done"
+      ExecStop=/bin/kill -s TERM $MAINPID
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/concourse-logging.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Service for Concourse logging
+      After=rc-local.service
+
+      [Service]
+      Type=simple
+      Restart=always
+      TimeoutSec=infinity
+
+      ExecStart=/bin/bash -c '/usr/bin/journalctl -u concourse --no-tail -f -o cat > /var/log/concourse.log'
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/lifecycled.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Service for Autoscaling lifecycle
+      Requires=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      Restart=always
+      TimeoutSec=infinity
+
+      Environment="AWS_REGION=${region}"
+      ExecStart=/usr/local/bin/lifecycled --sns-topic=${lifecycle_topic} --handler=/usr/local/scripts/lifecycle-handler.sh
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/usr/local/scripts/cloudformation-signal.sh"
+    permissions: "0744"
+    owner: "root"
+    content: |
+      #! /usr/bin/bash
+
+      set -euo pipefail
+
+      function await_unit() {
+        echo -n "Waiting for $1..."
+        while ! systemctl is-active $1 > /dev/null; do
+            sleep 1
+        done
+        echo "Done!"
+      }
+
+      await_unit lifecycled.service
+      await_unit concourse.service
+  - path: "/usr/local/scripts/lifecycle-handler.sh"
+    permissions: "0744"
+    owner: "root"
+    content: |
+      #! /usr/bin/bash
+
+      set -euo pipefail
+
+      systemctl stop concourse.service
+runcmd:
+  - |
+    cp /etc/awslogs/awscli.template /etc/awslogs/awscli.conf
+    cp /etc/awslogs/awslogs.template /etc/awslogs/awslogs.conf
+  - |
+    systemctl enable lifecycled.service --now
+    systemctl enable concourse-logging.service --now
+    systemctl enable awslogsd.service --now
+    systemctl enable concourse.service --now
+  - |
+    /usr/local/scripts/cloudformation-signal.sh
+    /opt/aws/bin/cfn-signal -e $? --stack ${stack_name} --resource AutoScalingGroup --region ${region}
