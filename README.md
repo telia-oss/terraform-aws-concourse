@@ -53,29 +53,12 @@ aws kms encrypt \
 
 ## Usage
 
-See example.
+See example. If you want to learn more about how to use Concourse,
+check out the [official documentation](https://concourse-ci.org).
 
-## Concourse usage
+## Related projects
 
-To create a new team in Concourse, an admin first logs into the `main` team:
-
-```bash
-fly --target admin login --team-name main --concourse-url https://ci.example.com
-## Same command with short flags:
-fly -t admin login -n main -c https://ci.example.com
-```
-
-Set up a new team:
-
-```bash
-fly -t admin set-team -n demo-team \
-    --github-auth-client-id <client> \
-    --github-auth-client-secret <secret> \
-    --github-auth-team TeliaSoneraNorge/demo-team
-```
-
-And then we can log into the new team:
-
-```bash
-fly --target demo login --team-name demo-team --concourse-url https://ci.example.com
-```
+- [concourse-images](https://github.com/telia-oss/concourse-images): A collection of docker images for use in Concourse tasks.
+- [concourse-tasks](https://github.com/telia-oss/concourse-tasks): A very small collection of Concourse tasks :)
+- [concourse-sts-lambda](https://github.com/telia-oss/concourse-sts-lambda): Lambda for managing temporary AWS credentials stored in SSM.
+- [concourse-github-lambda](https://github.com/telia-oss/concourse-github-lambda): Lambda for managing Github deploy keys.
