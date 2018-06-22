@@ -37,7 +37,7 @@ resource "aws_autoscaling_attachment" "internal_lb" {
 
 module "atc" {
   source  = "telia-oss/asg/aws"
-  version = "0.1.0"
+  version = "0.1.1"
 
   name_prefix       = "${var.name_prefix}-atc"
   user_data         = "${data.template_file.atc.rendered}"
