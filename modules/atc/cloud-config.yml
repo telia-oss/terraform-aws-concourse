@@ -68,7 +68,7 @@ write_files:
       Environment="CONCOURSE_OLD_ENCRYPTION_KEY=${old_encryption_key}"
 
       ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_URL=http://$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4):${atc_port}"
-      ExecStart=/usr/local/bin/concourse web --aws-ssm-region=${region}
+      ExecStart=/usr/local/bin/concourse web --aws-secretsmanager-region=${region}
 
       [Install]
       WantedBy=multi-user.target
