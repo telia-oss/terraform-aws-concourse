@@ -60,5 +60,5 @@ check out the [official documentation](https://concourse-ci.org).
 
 - [concourse-images](https://github.com/telia-oss/concourse-images): A collection of docker images for use in Concourse tasks.
 - [concourse-tasks](https://github.com/telia-oss/concourse-tasks): A very small collection of Concourse tasks :)
-- [concourse-sts-lambda](https://github.com/telia-oss/concourse-sts-lambda): Lambda for managing temporary AWS credentials stored in SSM.
+- [concourse-sts-lambda](https://github.com/telia-oss/concourse-sts-lambda): Lambda for managing temporary AWS credentials stored in Secrets Manager.
 - [concourse-github-lambda](https://github.com/telia-oss/concourse-github-lambda): Lambda for managing Github deploy keys.
