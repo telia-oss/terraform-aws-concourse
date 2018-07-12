@@ -3,6 +3,8 @@
 # -------------------------------------------------------------------------------
 data "aws_region" "current" {}
 
+data "aws_caller_identity" "current" {}
+
 data "aws_vpc" "concourse" {
   id = "${var.vpc_id}"
 }
@@ -112,6 +114,29 @@ data "aws_iam_policy_document" "atc" {
       "cloudwatch:ListMetrics",
       "ec2:DescribeTags",
       "elasticloadbalancing:DescribeTargetHealth",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "secretsmanager:ListSecrets",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+    ]
+
+    resources = [
+      "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:/concourse*",
     ]
   }
 }
