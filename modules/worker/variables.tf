@@ -38,6 +38,11 @@ variable "instance_key" {
   default     = ""
 }
 
+variable "instance_volume_size" {
+  description = "The size of the worker volumes in gigabytes."
+  default     = "50"
+}
+
 variable "concourse_keys" {
   description = "Path to a directory containing the Concourse SSH keys. (See README.md)."
 }

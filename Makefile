@@ -1,5 +1,4 @@
 OS=darwin
-DIR=$(shell pwd)
 
 default: test
 
@@ -20,19 +19,19 @@ test:
 			echo "✗ terraform validate failed: $$d"; \
 			exit 1; \
 		fi; \
-		cd $(DIR); \
+		cd $(CURDIR); \
 	done
 	@echo "√ terraform validate modules (not including variables)"; \
 
 	@for d in $$(find . -type f -name '*.tf' -path "./examples/*" -not -path "**/.terraform/*" -exec dirname {} \; | sort -u); do \
 		cd $$d; \
 		terraform init -backend=false >> /dev/null; \
-		terraform validate -check-variables=false; \
+		terraform validate; \
 		if [ $$? -eq 1 ]; then \
 			echo "✗ terraform validate failed: $$d"; \
 			exit 1; \
 		fi; \
-		cd $(DIR); \
+		cd $(CURDIR); \
 	done
 	@echo "√ terraform validate examples"; \
 
