@@ -123,6 +123,16 @@ variable "tsa_port" {
   default     = "2222"
 }
 
+variable "prometheus_enabled" {
+  description = "Enable exporting of prometheus metrics."
+  default     = "false"
+}
+
+variable "prometheus_port" {
+  description = "Port where prometheus metrics can be scraped."
+  default     = "9391"
+}
+
 variable "encryption_key" {
   description = "A 16 or 32 length key used to encrypt sensitive information before storing it in the database."
 }
