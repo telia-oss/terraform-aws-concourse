@@ -32,7 +32,13 @@
             "curl -L https://github.com/lox/lifecycled/releases/download/v2.0.1/lifecycled-linux-amd64 -o lifecycled",
             "sudo chmod +x lifecycled",
             "sudo chown root:root lifecycled",
-            "sudo mv lifecycled /usr/local/bin/lifecycled"
+            "sudo mv lifecycled /usr/local/bin/lifecycled",
+            "curl -L https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz -o node_exporter.tar.gz",
+            "tar xvzf node_exporter.tar.gz --strip=1 */node_exporter",
+            "rm node_exporter.tar.gz",
+            "sudo chmod +x node_exporter",
+            "sudo chown root:root node_exporter",
+            "sudo mv node_exporter /usr/local/bin/node_exporter"
         ]
     }]
 }
