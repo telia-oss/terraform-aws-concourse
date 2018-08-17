@@ -55,17 +55,18 @@ data "template_file" "worker" {
   template = "${file("${path.module}/cloud-config.yml")}"
 
   vars {
-    stack_name       = "${var.name_prefix}-worker-asg"
-    region           = "${data.aws_region.current.name}"
-    lifecycle_topic  = "${aws_sns_topic.worker.arn}"
-    tsa_host         = "${var.tsa_host}"
-    tsa_port         = "${var.tsa_port}"
-    log_group_name   = "${aws_cloudwatch_log_group.worker.name}"
-    log_level        = "${var.log_level}"
-    worker_team      = "${var.worker_team}"
-    worker_key       = "${file("${var.concourse_keys}/worker_key")}"
-    pub_worker_key   = "${file("${var.concourse_keys}/worker_key.pub")}"
-    pub_tsa_host_key = "${file("${var.concourse_keys}/tsa_host_key.pub")}"
+    stack_name          = "${var.name_prefix}-worker-asg"
+    region              = "${data.aws_region.current.name}"
+    lifecycle_topic     = "${aws_sns_topic.worker.arn}"
+    tsa_host            = "${var.tsa_host}"
+    tsa_port            = "${var.tsa_port}"
+    log_group_name      = "${aws_cloudwatch_log_group.worker.name}"
+    log_level           = "${var.log_level}"
+    worker_team         = "${var.worker_team}"
+    worker_key          = "${file("${var.concourse_keys}/worker_key")}"
+    pub_worker_key      = "${file("${var.concourse_keys}/worker_key.pub")}"
+    pub_tsa_host_key    = "${file("${var.concourse_keys}/tsa_host_key.pub")}"
+    start_node_exporter = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
   }
 }
 

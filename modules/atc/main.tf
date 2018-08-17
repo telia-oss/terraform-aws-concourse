@@ -74,6 +74,7 @@ data "template_file" "atc" {
     github_teams              = "${length(var.github_teams) > 0 ? "Environment=\"CONCOURSE_GITHUB_AUTH_TEAM=${join(",", var.github_teams)}\"" : ""}"
     prometheus_bind_ip        = "${var.prometheus_enabled == "true" ? "Environment=\"CONCOURSE_PROMETHEUS_BIND_IP=0.0.0.0\"" : ""}"
     prometheus_bind_port      = "${var.prometheus_enabled == "true" ? "Environment=\"CONCOURSE_PROMETHEUS_BIND_PORT=${var.prometheus_port}\"" : ""}"
+    start_node_exporter       = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
     concourse_web_host        = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
     concourse_postgres_source = "${var.postgres_connection}"
     log_group_name            = "${aws_cloudwatch_log_group.atc.name}"

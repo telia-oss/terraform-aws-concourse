@@ -158,6 +158,7 @@ runcmd:
     systemctl enable concourse-logging.service --now
     systemctl enable awslogsd.service --now
     systemctl enable concourse.service --now
+    ${start_node_exporter}
   - |
     /usr/local/scripts/cloudformation-signal.sh
     /opt/aws/bin/cfn-signal -e $? --stack ${stack_name} --resource AutoScalingGroup --region ${region}
