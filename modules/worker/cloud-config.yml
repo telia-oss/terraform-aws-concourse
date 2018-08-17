@@ -70,6 +70,22 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+  - path: "/etc/systemd/system/node_exporter.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Node exporter for Prometheus to scrape
+      Requires=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      Restart=always
+      ExecStart=/usr/local/bin/node_exporter
+
+      [Install]
+      WantedBy=multi-user.target
   - path: "/etc/systemd/system/concourse-logging.service"
     permissions: "0644"
     owner: "root"
@@ -142,6 +158,7 @@ runcmd:
     systemctl enable concourse-logging.service --now
     systemctl enable awslogsd.service --now
     systemctl enable concourse.service --now
+    ${start_node_exporter}
   - |
     /usr/local/scripts/cloudformation-signal.sh
     /opt/aws/bin/cfn-signal -e $? --stack ${stack_name} --resource AutoScalingGroup --region ${region}
