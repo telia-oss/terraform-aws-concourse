@@ -59,6 +59,11 @@ variable "tsa_port" {
   description = "The port used to reach the TSA host."
 }
 
+variable "prometheus_enabled" {
+  description = "Enable exporting of prometheus metrics."
+  default     = "false"
+}
+
 variable "worker_team" {
   description = "The name of the team that this worker will be assigned to."
   default     = ""
