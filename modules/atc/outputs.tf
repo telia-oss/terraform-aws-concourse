@@ -5,8 +5,8 @@ output "role_arn" {
   value = "${module.atc.role_arn}"
 }
 
-output "role_name" {
-  value = "${module.atc.role_name}"
+output "role_id" {
+  value = "${module.atc.role_id}"
 }
 
 output "security_group_id" {
