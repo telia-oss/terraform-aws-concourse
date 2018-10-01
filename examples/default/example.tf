@@ -12,7 +12,7 @@ data "aws_subnet_ids" "main" {
 
 module "postgres" {
   source  = "telia-oss/rds-cluster/aws"
-  version = "0.1.1"
+  version = "0.3.0"
 
   name_prefix = "example"
   username    = "superuser"
@@ -39,7 +39,11 @@ module "concourse_atc" {
   vpc_id               = "${data.aws_vpc.main.id}"
   public_subnet_ids    = ["${data.aws_subnet_ids.main.ids}"]
   private_subnet_ids   = ["${data.aws_subnet_ids.main.ids}"]
-  postgres_connection  = "${module.postgres.postgres_connection_string}"
+  postgres_host        = "${module.postgres.endpoint}"
+  postgres_port        = "${module.postgres.port}"
+  postgres_username    = "${module.postgres.username}"
+  postgres_password    = "<postgres-password>"
+  postgres_database    = "${module.postgres.database_name}"
   encryption_key       = ""
   instance_ami         = "<packer-ami>"
   github_client_id     = "<github-client>"

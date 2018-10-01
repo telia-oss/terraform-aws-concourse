@@ -52,8 +52,24 @@ variable "concourse_keys" {
   description = "Path to a directory containing the Concourse SSH keys. (See README.md)."
 }
 
-variable "postgres_connection" {
-  description = "PostgreSQL connection string (Format: postgres://<username>:<password>@<address>:<port>/<database>)."
+variable "postgres_host" {
+  description = "The DNS address of the RDS instance."
+}
+
+variable "postgres_port" {
+  description = "The port on which the DB accepts connections."
+}
+
+variable "postgres_username" {
+  description = "The master username for the database."
+}
+
+variable "postgres_password" {
+  description = "Password for the master DB user."
+}
+
+variable "postgres_database" {
+  description = "Name for the automatically created database."
 }
 
 variable "basic_auth_username" {
