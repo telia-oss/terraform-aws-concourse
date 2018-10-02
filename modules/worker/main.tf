@@ -3,6 +3,8 @@
 # -------------------------------------------------------------------------------
 data "aws_region" "current" {}
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_security_group_rule" "atc_ingress_garbage_collection" {
   security_group_id        = "${module.worker.security_group_id}"
   type                     = "ingress"
@@ -55,23 +57,28 @@ data "template_file" "worker" {
   template = "${file("${path.module}/cloud-config.yml")}"
 
   vars {
-    stack_name          = "${var.name_prefix}-worker-asg"
-    region              = "${data.aws_region.current.name}"
-    lifecycle_topic     = "${aws_sns_topic.worker.arn}"
-    tsa_host            = "${var.tsa_host}"
-    tsa_port            = "${var.tsa_port}"
-    log_group_name      = "${aws_cloudwatch_log_group.worker.name}"
-    log_level           = "${var.log_level}"
-    worker_team         = "${var.worker_team}"
-    worker_key          = "${file("${var.concourse_keys}/worker_key")}"
-    pub_worker_key      = "${file("${var.concourse_keys}/worker_key.pub")}"
-    pub_tsa_host_key    = "${file("${var.concourse_keys}/tsa_host_key.pub")}"
-    start_node_exporter = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
+    stack_name                = "${var.name_prefix}-worker-asg"
+    region                    = "${data.aws_region.current.name}"
+    lifecycle_topic           = "${aws_sns_topic.worker.arn}"
+    lifecycled_log_group_name = "${aws_cloudwatch_log_group.worker_lifecycled.name}"
+    tsa_host                  = "${var.tsa_host}"
+    tsa_port                  = "${var.tsa_port}"
+    log_group_name            = "${aws_cloudwatch_log_group.worker.name}"
+    log_level                 = "${var.log_level}"
+    worker_team               = "${var.worker_team}"
+    worker_key                = "${file("${var.concourse_keys}/worker_key")}"
+    pub_worker_key            = "${file("${var.concourse_keys}/worker_key.pub")}"
+    pub_tsa_host_key          = "${file("${var.concourse_keys}/tsa_host_key.pub")}"
+    start_node_exporter       = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
   }
 }
 
 resource "aws_cloudwatch_log_group" "worker" {
   name = "${var.name_prefix}-worker"
+}
+
+resource "aws_cloudwatch_log_group" "worker_lifecycled" {
+  name = "${var.name_prefix}-worker-lifecycled"
 }
 
 data "aws_iam_policy_document" "worker" {
@@ -80,6 +87,7 @@ data "aws_iam_policy_document" "worker" {
 
     resources = [
       "${aws_cloudwatch_log_group.worker.arn}",
+      "${aws_cloudwatch_log_group.worker_lifecycled.arn}",
     ]
 
     actions = [
@@ -115,11 +123,22 @@ data "aws_iam_policy_document" "worker" {
     ]
   }
 
-  # TODO: Scope this to lifecycled-* (as this is what lifecycled names the sqs queues)
   statement {
     effect = "Allow"
 
-    resources = ["*"]
+    actions = [
+      "logs:DescribeLogStreams",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    resources = ["arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:lifecycled-*"]
 
     actions = [
       "sqs:*",
@@ -133,8 +152,6 @@ data "aws_iam_policy_document" "worker" {
     resources = ["*"]
 
     actions = [
-      "autoscaling:DescribeAutoScalingInstances",
-      "autoscaling:DescribeLifecycleHooks",
       "autoscaling:RecordLifecycleActionHeartbeat",
       "autoscaling:CompleteLifecycleAction",
     ]
@@ -150,7 +167,7 @@ resource "aws_autoscaling_lifecycle_hook" "worker" {
   autoscaling_group_name  = "${module.worker.id}"
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
   default_result          = "CONTINUE"
-  heartbeat_timeout       = "3600"
+  heartbeat_timeout       = "300"
   notification_target_arn = "${aws_sns_topic.worker.arn}"
   role_arn                = "${aws_iam_role.lifecycle.arn}"
 }
