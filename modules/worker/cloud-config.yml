@@ -49,7 +49,6 @@ write_files:
       RestartSec=30s
       TimeoutStartSec=5m
       TimeoutStopSec=1h
-      PIDFile=/run/concourse.pid
 
       Environment="CONCOURSE_TEAM=${worker_team}"
       Environment="CONCOURSE_BIND_IP=0.0.0.0"
