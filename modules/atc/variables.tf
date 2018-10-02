@@ -36,7 +36,7 @@ variable "max_size" {
 
 variable "instance_type" {
   description = "Type of instance to provision for the Concourse ATC."
-  default     = "t2.small"
+  default     = "t3.small"
 }
 
 variable "instance_ami" {
@@ -52,18 +52,24 @@ variable "concourse_keys" {
   description = "Path to a directory containing the Concourse SSH keys. (See README.md)."
 }
 
-variable "postgres_connection" {
-  description = "PostgreSQL connection string (Format: postgres://<username>:<password>@<address>:<port>/<database>)."
+variable "postgres_host" {
+  description = "The DNS address of the postgres DB."
 }
 
-variable "basic_auth_username" {
-  description = "Username to use for basic auth."
-  default     = ""
+variable "postgres_port" {
+  description = "The port on which the DB accepts connections."
 }
 
-variable "basic_auth_password" {
-  description = "Password to use for basic auth."
-  default     = ""
+variable "postgres_username" {
+  description = "The master username for the database."
+}
+
+variable "postgres_password" {
+  description = "Password for the master DB user."
+}
+
+variable "postgres_database" {
+  description = "Name for the automatically created database."
 }
 
 variable "github_client_id" {
@@ -83,7 +89,7 @@ variable "github_users" {
 }
 
 variable "github_teams" {
-  description = "GitHub team whose members will have admin access."
+  description = "GitHub team whose members will have admin access (<org>:<team>)."
   type        = "list"
   default     = []
 }

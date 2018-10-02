@@ -51,13 +51,17 @@ write_files:
       TimeoutStopSec=1h
       PIDFile=/run/concourse.pid
 
+      Environment="CONCOURSE_GITHUB_CLIENT_ID=${github_client_id}"
+      Environment="CONCOURSE_GITHUB_CLIENT_SECRET=${github_client_secret}"
       ${github_users}
       ${github_teams}
-      Environment="CONCOURSE_BASIC_AUTH_USERNAME=${basic_auth_username}"
-      Environment="CONCOURSE_BASIC_AUTH_PASSWORD=${basic_auth_password}"
-      Environment="CONCOURSE_GITHUB_AUTH_CLIENT_ID=${github_client_id}"
-      Environment="CONCOURSE_GITHUB_AUTH_CLIENT_SECRET=${github_client_secret}"
-      Environment="CONCOURSE_POSTGRES_DATA_SOURCE=${concourse_postgres_source}"
+
+      Environment="CONCOURSE_POSTGRES_HOST=${postgres_host}"
+      Environment="CONCOURSE_POSTGRES_PORT=${postgres_port}"
+      Environment="CONCOURSE_POSTGRES_USER=${postgres_username}"
+      Environment="CONCOURSE_POSTGRES_PASSWORD=${postgres_password}"
+      Environment="CONCOURSE_POSTGRES_DATABASE=${postgres_database}"
+
       Environment="CONCOURSE_EXTERNAL_URL=${concourse_web_host}"
       Environment="CONCOURSE_LOG_LEVEL=${log_level}"
       Environment="CONCOURSE_TSA_LOG_LEVEL=${log_level}"
@@ -66,6 +70,7 @@ write_files:
       Environment="CONCOURSE_SESSION_SIGNING_KEY=/concourse/keys/web/session_signing_key"
       Environment="CONCOURSE_ENCRYPTION_KEY=${encryption_key}"
       Environment="CONCOURSE_OLD_ENCRYPTION_KEY=${old_encryption_key}"
+
       ${prometheus_bind_ip}
       ${prometheus_bind_port}
 

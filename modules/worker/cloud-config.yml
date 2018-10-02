@@ -118,7 +118,11 @@ write_files:
       TimeoutSec=infinity
 
       Environment="AWS_REGION=${region}"
-      ExecStart=/usr/local/bin/lifecycled --sns-topic=${lifecycle_topic} --handler=/usr/local/scripts/lifecycle-handler.sh
+      ExecStart=/usr/local/bin/lifecycled \
+        --sns-topic=${lifecycle_topic} \
+        --handler=/usr/local/scripts/lifecycle-handler.sh \
+        --cloudwatch-group=${lifecycled_log_group_name} \
+        --json
 
       [Install]
       WantedBy=multi-user.target
