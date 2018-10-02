@@ -26,7 +26,7 @@ variable "max_size" {
 
 variable "instance_type" {
   description = "Type of instance to provision for the Concourse workers."
-  default     = "m5.large"
+  default     = "t3.large"
 }
 
 variable "instance_ami" {
