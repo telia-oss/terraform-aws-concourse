@@ -13,7 +13,7 @@ packer validate template.json
 
 packer build \
   -var="source_ami=<amazon-linux-2>" \
-  -var="concourse_version=v3.14.1" \
+  -var="concourse_version=v4.2.1" \
   template.json
 ```
 
