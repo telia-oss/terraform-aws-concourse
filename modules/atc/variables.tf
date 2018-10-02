@@ -53,7 +53,7 @@ variable "concourse_keys" {
 }
 
 variable "postgres_host" {
-  description = "The DNS address of the RDS instance."
+  description = "The DNS address of the postgres DB."
 }
 
 variable "postgres_port" {
