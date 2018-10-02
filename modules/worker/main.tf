@@ -32,7 +32,7 @@ resource "aws_security_group_rule" "atc_ingress_garden" {
 
 module "worker" {
   source  = "telia-oss/asg/aws"
-  version = "0.1.1"
+  version = "0.2.0"
 
   name_prefix          = "${var.name_prefix}-worker"
   user_data            = "${data.template_file.worker.rendered}"

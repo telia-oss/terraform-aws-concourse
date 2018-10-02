@@ -39,7 +39,7 @@ resource "aws_autoscaling_attachment" "internal_lb" {
 
 module "atc" {
   source  = "telia-oss/asg/aws"
-  version = "0.1.1"
+  version = "0.2.0"
 
   name_prefix       = "${var.name_prefix}-atc"
   user_data         = "${data.template_file.atc.rendered}"
@@ -170,7 +170,7 @@ resource "aws_route53_record" "main" {
 
 module "external_lb" {
   source  = "telia-oss/loadbalancer/aws"
-  version = "0.1.0"
+  version = "0.2.0"
 
   name_prefix = "${var.name_prefix}-external"
   vpc_id      = "${var.vpc_id}"
@@ -221,7 +221,7 @@ resource "aws_lb_target_group" "external" {
 
 module "internal_lb" {
   source  = "telia-oss/loadbalancer/aws"
-  version = "0.1.0"
+  version = "0.2.0"
 
   name_prefix = "${var.name_prefix}-internal"
   vpc_id      = "${var.vpc_id}"
