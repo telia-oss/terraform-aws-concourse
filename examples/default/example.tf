@@ -49,7 +49,7 @@ module "concourse_atc" {
   github_client_id     = "<github-client>"
   github_client_secret = "<github-secret>"
   github_users         = ["itsdalmo"]
-  github_teams         = ["telia-oss/some-team"]
+  github_teams         = ["telia-oss:concourse-owners"]
 
   tags {
     environment = "prod"

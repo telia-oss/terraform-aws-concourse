@@ -72,16 +72,6 @@ variable "postgres_database" {
   description = "Name for the automatically created database."
 }
 
-variable "basic_auth_username" {
-  description = "Username to use for basic auth."
-  default     = ""
-}
-
-variable "basic_auth_password" {
-  description = "Password to use for basic auth."
-  default     = ""
-}
-
 variable "github_client_id" {
   description = "Application client ID for enabling GitLab OAuth."
   default     = ""
@@ -99,7 +89,7 @@ variable "github_users" {
 }
 
 variable "github_teams" {
-  description = "GitHub team whose members will have admin access."
+  description = "GitHub team whose members will have admin access (<org>:<team>)."
   type        = "list"
   default     = []
 }
