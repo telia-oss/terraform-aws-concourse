@@ -65,8 +65,8 @@ write_files:
       ExecStart=/usr/local/bin/concourse worker
 
       ExecStop=/usr/local/bin/concourse retire-worker
-      ExecStop=/bin/bash -c "while ! /usr/local/bin/concourse retire-worker | grep worker-not-found > /dev/null; do sleep 5; done"
-      ExecStop=/bin/kill -s TERM $MAINPID
+      ExecStop=/bin/bash -c "while pgrep concourse; do sleep 5; done"
+      ExecStop=/bin/kill -s TERM -- $MAINPID
 
       [Install]
       WantedBy=multi-user.target
