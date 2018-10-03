@@ -52,6 +52,7 @@ write_files:
 
       Environment="CONCOURSE_TEAM=${worker_team}"
       Environment="CONCOURSE_BIND_IP=0.0.0.0"
+      Environment="CONCOURSE_LOG_LEVEL=${log_level}"
       Environment="CONCOURSE_WORK_DIR=/concourse"
       Environment="CONCOURSE_TSA_HOST=${tsa_host}:${tsa_port}"
       Environment="CONCOURSE_BAGGAGECLAIM_BIND_IP=0.0.0.0"
