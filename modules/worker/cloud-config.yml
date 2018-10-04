@@ -49,9 +49,11 @@ write_files:
       RestartSec=30s
       TimeoutStartSec=5m
       TimeoutStopSec=1h
+      KillMode=process
 
       Environment="CONCOURSE_TEAM=${worker_team}"
       Environment="CONCOURSE_BIND_IP=0.0.0.0"
+      Environment="CONCOURSE_LOG_LEVEL=${log_level}"
       Environment="CONCOURSE_WORK_DIR=/concourse"
       Environment="CONCOURSE_TSA_HOST=${tsa_host}:${tsa_port}"
       Environment="CONCOURSE_BAGGAGECLAIM_BIND_IP=0.0.0.0"
@@ -64,8 +66,7 @@ write_files:
       ExecStart=/usr/local/bin/concourse worker
 
       ExecStop=/usr/local/bin/concourse retire-worker
-      ExecStop=/bin/bash -c "while ! /usr/local/bin/concourse retire-worker | grep worker-not-found > /dev/null; do sleep 5; done"
-      ExecStop=/bin/kill -s TERM $MAINPID
+      ExecStop=/bin/bash -c "while pgrep concourse >> /dev/null; do echo draining worker... && sleep 5; done; echo done draining!"
 
       [Install]
       WantedBy=multi-user.target
