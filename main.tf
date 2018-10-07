@@ -143,7 +143,7 @@ module "concourse_worker" {
   instance_ami         = "${var.ami_id}"
   instance_key         = ""
   instance_volume_size = "150"
-  log_level            = "error"
+  log_level            = "info"
   prometheus_enabled   = "${var.prometheus_sg != "" ? "true" : "false"}"
 
   tags = "${var.tags}"
