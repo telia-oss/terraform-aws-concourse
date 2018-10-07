@@ -67,6 +67,14 @@ variable "github_client_secret" {
   description = "Application client secret for GitLab OAuth (KMS encrypted)."
 }
 
+variable "sts_lambda_zip" {
+  description = "Path to the STS lambda zip-file."
+}
+
+variable "github_lambda_zip" {
+  description = "Path to the Github lambda zip-file."
+}
+
 variable "github_lambda_deploy_key_prefix" {
   description = "Prefix to use for deploy keys created by the Github Lambda (to avoid conflicts between e.g. stage and prod)."
 }

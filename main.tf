@@ -52,6 +52,8 @@ module "sts_lambda" {
   source = "github.com/telia-oss/concourse-sts-lambda//terraform/modules/lambda?ref=v0.4.1"
 
   name_prefix            = "${var.name_prefix}-sts-credentials"
+  filename               = "${var.sts_lambda_zip}"
+  s3_bucket              = ""
   role_prefix            = "machine-user"
   secrets_manager_prefix = "concourse"
   tags                   = "${var.tags}"
@@ -61,6 +63,8 @@ module "github_lambda" {
   source = "github.com/telia-oss/concourse-github-lambda//terraform/modules/lambda?ref=v0.6.2"
 
   name_prefix                  = "${var.name_prefix}-github-credentials"
+  filename                     = "${var.github_lambda_zip}"
+  s3_bucket                    = ""
   github_prefix                = "${var.github_lambda_deploy_key_prefix}"
   secrets_manager_prefix       = "concourse"
   token_service_integration_id = "sm:///concourse-github-lambda/token-service/integration-id"
