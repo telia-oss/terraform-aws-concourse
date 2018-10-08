@@ -7,14 +7,27 @@ variable "name_prefix" {
 
 variable "domain" {
   description = "The (domain) name to use for a new Concourse record."
+  default     = ""
 }
 
 variable "zone_id" {
   description = "The ID of the hosted zone to contain the Concourse record."
+  default     = ""
+}
+
+variable "web_protocol" {
+  description = "The protocol for connections from clients to the external load balancer (Concourse web interface)."
+  default     = "HTTP"
+}
+
+variable "web_port" {
+  description = "The port on which the external load balancer is listening (Concourse web interface)"
+  default     = "80"
 }
 
 variable "web_certificate_arn" {
   description = "The ARN of the default SSL server certificate."
+  default     = ""
 }
 
 variable "authorized_cidr" {
@@ -25,22 +38,27 @@ variable "authorized_cidr" {
 
 variable "private_subnet_count" {
   description = "Number of private subnets to provision (will not exceed the number of AZ's in the region)."
+  default     = "3"
 }
 
 variable "web_count" {
   description = "The minimum and desired number of Concourse web nodes to provision."
+  default     = "1"
 }
 
 variable "web_count_max" {
   description = "The maximum number of Concourse web nodes to provision."
+  default     = "2"
 }
 
 variable "worker_count" {
   description = "The minimum and desired number of Concourse worker nodes to provision."
+  default     = "1"
 }
 
 variable "worker_count_max" {
   description = "The maximum number of Concourse worker nodes to provision."
+  default     = "2"
 }
 
 variable "ami_id" {

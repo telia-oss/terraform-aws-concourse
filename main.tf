@@ -101,8 +101,8 @@ module "concourse_atc" {
   domain               = "${var.domain}"
   zone_id              = "${var.zone_id}"
   web_certificate_arn  = "${var.web_certificate_arn}"
-  web_protocol         = "https"
-  web_port             = "443"
+  web_protocol         = "${var.web_protocol}"
+  web_port             = "${var.web_port}"
   authorized_cidr      = ["${var.authorized_cidr}"]
   concourse_keys       = "${path.root}/keys"
   vpc_id               = "${module.vpc.vpc_id}"
