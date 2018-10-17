@@ -51,6 +51,18 @@ aws kms encrypt \
   --profile default
 ```
 
+
+3. Add secrets for the [Github Lambda](https://github.com/telia-oss/concourse-github-lambda) (only required for the root module):
+
+Add the [four required secrets](https://github.com/telia-oss/concourse-github-lambda#secrets) for the Github Lambda under the `/concourse-github-lambda/` path, e.g.:
+
+```bash
+aws secretsmanager create-secret \
+  --name /concourse-github-lambda/token-service/integration-id \
+  --secret-string "13024" \
+  --region eu-west-1
+```
+
 ## Usage
 
 See example. If you want to learn more about how to use Concourse,

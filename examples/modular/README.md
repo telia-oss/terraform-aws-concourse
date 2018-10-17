@@ -1,3 +1,4 @@
-## examples/default
+## examples/modular
 
-Basic example which creates a Concourse cluster in the default VPC.
+Example of composing the modules in to a complete Concourse deployment in the default VPC. The root module
+is another good example of how to compose the ATC/worker modules.
