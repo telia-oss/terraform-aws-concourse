@@ -8,6 +8,8 @@ module "concourse" {
   name_prefix          = "concourse-example"
   domain               = "concourse.example.com"
   zone_id              = "<zone-id>"
+  web_port             = "443"
+  web_protocol         = "HTTPS"
   web_certificate_arn  = "<certificate-arn>"
   authorized_cidr      = ["0.0.0.0/0"]
   private_subnet_count = 2

@@ -31,7 +31,6 @@ ssh-keygen -t rsa -f ./keys/session_signing_key -N ''
 cp ./keys/worker_key.pub ./keys/authorized_worker_keys
 ```
 
-
 NOTE: The `source_ami` for packer must be an Amazon Linux 2 AMI since the launch configuration uses systemd.
 
 ### Required for HTTPS
@@ -52,9 +51,9 @@ aws kms encrypt \
 ```
 
 
-3. Add secrets for the [Github Lambda](https://github.com/telia-oss/concourse-github-lambda) (only required for the root module):
+3. Required (when using the root module) for the [Github Lambda](https://github.com/telia-oss/concourse-github-lambda)
 
-Add the [four required secrets](https://github.com/telia-oss/concourse-github-lambda#secrets) for the Github Lambda under the `/concourse-github-lambda/` path, e.g.:
+Create two Github Apps and add the [four required secrets](https://github.com/telia-oss/concourse-github-lambda#secrets) for the Github Lambda under the `/concourse-github-lambda/` path, e.g.:
 
 ```bash
 aws secretsmanager create-secret \
@@ -65,8 +64,13 @@ aws secretsmanager create-secret \
 
 ## Usage
 
-See example. If you want to learn more about how to use Concourse,
-check out the [official documentation](https://concourse-ci.org).
+See examples. The root module is intended to provide a production grade deployment of Concourse and is therefore very opinionated; check out the [modular](examples/modular) example if you want
+more flexibility. If you want to learn more about how to use Concourse, check out the [official documentation](https://concourse-ci.org).
+
+## Examples
+
+* [Simple Example](examples/default/example.tf)
+* [Modular Example](examples/modular/example.tf)
 
 ## Related projects
 
@@ -74,3 +78,11 @@ check out the [official documentation](https://concourse-ci.org).
 - [concourse-tasks](https://github.com/telia-oss/concourse-tasks): A very small collection of Concourse tasks :)
 - [concourse-sts-lambda](https://github.com/telia-oss/concourse-sts-lambda): Lambda for managing temporary AWS credentials stored in Secrets Manager.
 - [concourse-github-lambda](https://github.com/telia-oss/concourse-github-lambda): Lambda for managing Github deploy keys.
+
+## Authors
+
+Currently maintained by [these contributors](../../graphs/contributors).
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for full details.
