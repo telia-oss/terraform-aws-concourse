@@ -185,7 +185,7 @@ resource "aws_lb_listener" "external" {
   port              = "${var.web_port}"
   protocol          = "${upper(var.web_protocol)}"
   certificate_arn   = "${var.web_certificate_arn}"
-  ssl_policy        = "${var.web_certificate_arn == "" ? "" : "ELBSecurityPolicy-2015-05"}"
+  ssl_policy        = "${var.web_certificate_arn == "" ? "" : "ELBSecurityPolicy-TLS-1-2-2017-01"}"
 
   default_action {
     target_group_arn = "${aws_lb_target_group.external.arn}"
