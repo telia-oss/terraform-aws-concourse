@@ -1,6 +1,11 @@
-OS=darwin
+VERSION ?= $(shell git describe --tags --candidates=1 --dirty 2>/dev/null || echo "dev")
 
 default: test
+
+ami:
+	@echo "== Creating packer AMI =="
+	packer validate -var="template_version=$(VERSION)" packer/template.json
+	packer build -var="template_version=$(VERSION)" packer/template.json
 
 test:
 	@echo "== Test =="
