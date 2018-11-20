@@ -12,12 +12,24 @@
             "type": "amazon-ebs",
             "region": "eu-west-1",
             "source_ami": "{{user `source_ami`}}",
+            "source_ami_filter": {
+                "filters": {
+                    "name": "amzn2-ami-hvm*gp2",
+                    "architecture": "x86_64",
+                    "virtualization-type": "hvm",
+                    "root-device-type": "ebs"
+                },
+                "owners": [
+                    "137112412989"
+                ],
+                "most_recent": true
+            },
             "instance_type": "m3.medium",
             "ssh_username": "ec2-user",
             "ami_name": "concourse-{{user `concourse_version`}}-{{timestamp}}",
             "ami_users": "{{user `ami_users`}}",
             "tags": {
-                "source_ami": "{{user `source_ami`}}",
+                "source_ami": "{{ .SourceAMI }}",
                 "concourse_version": "{{user `concourse_version`}}",
                 "template_version": "{{user `template_version`}}"
             }
