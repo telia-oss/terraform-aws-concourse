@@ -33,6 +33,7 @@
         {
             "type": "shell",
             "inline": [
+                "curl -L https://github.com/concourse/concourse/releases/download/{{user `concourse_version`}}/concourse_linux_amd64 -o concourse",
                 "sudo chmod +x concourse",
                 "sudo chown root:root concourse",
                 "sudo mv concourse /usr/local/bin/concourse"
