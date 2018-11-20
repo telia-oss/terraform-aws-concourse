@@ -41,7 +41,7 @@
         {
             "type": "shell",
             "inline": [
-                "curl -L https://github.com/lox/lifecycled/releases/download/v3.0.0/lifecycled-linux-amd64 -o lifecycled",
+                "curl -L https://github.com/buildkite/lifecycled/releases/download/v3.0.0/lifecycled-linux-amd64 -o lifecycled",
                 "sudo chmod +x lifecycled",
                 "sudo chown root:root lifecycled",
                 "sudo mv lifecycled /usr/local/bin/lifecycled"
