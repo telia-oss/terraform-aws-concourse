@@ -50,6 +50,15 @@
         {
             "type": "shell",
             "inline": [
+                "curl -L https://github.com/telia-oss/aws-env/releases/download/v1.0.0/aws-env-linux-amd64 -o aws-env",
+                "sudo chmod +x aws-env",
+                "sudo chown root:root aws-env",
+                "sudo mv aws-env /usr/local/bin/aws-env"
+            ]
+        },
+        {
+            "type": "shell",
+            "inline": [
                 "curl -L https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz -o node_exporter.tar.gz",
                 "tar xvzf node_exporter.tar.gz --strip=1 */node_exporter",
                 "rm node_exporter.tar.gz",
