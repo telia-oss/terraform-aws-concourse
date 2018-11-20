@@ -27,15 +27,29 @@
             "inline": [
                 "sleep 30",
                 "sudo yum update -y",
-                "sudo yum install -y awslogs aws-cfn-bootstrap",
-                "curl -L https://github.com/concourse/concourse/releases/download/{{user `concourse_version`}}/concourse_linux_amd64 -o concourse",
+                "sudo yum install -y awslogs aws-cfn-bootstrap"
+            ]
+        },
+        {
+            "type": "shell",
+            "inline": [
                 "sudo chmod +x concourse",
                 "sudo chown root:root concourse",
-                "sudo mv concourse /usr/local/bin/concourse",
+                "sudo mv concourse /usr/local/bin/concourse"
+            ]
+        },
+        {
+            "type": "shell",
+            "inline": [
                 "curl -L https://github.com/lox/lifecycled/releases/download/v3.0.0/lifecycled-linux-amd64 -o lifecycled",
                 "sudo chmod +x lifecycled",
                 "sudo chown root:root lifecycled",
-                "sudo mv lifecycled /usr/local/bin/lifecycled",
+                "sudo mv lifecycled /usr/local/bin/lifecycled"
+            ]
+        },
+        {
+            "type": "shell",
+            "inline": [
                 "curl -L https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz -o node_exporter.tar.gz",
                 "tar xvzf node_exporter.tar.gz --strip=1 */node_exporter",
                 "rm node_exporter.tar.gz",
