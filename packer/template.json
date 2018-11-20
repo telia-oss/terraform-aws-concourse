@@ -1,11 +1,11 @@
 {
     "variables": {
         "source_ami": "",
+        "ami_users": "",
+        "template_version": null,
         "concourse_version": "v4.2.1",
         "lifecycled_version": "v3.0.0",
-        "aws_env_version": "v1.0.0",
-        "template_version": "",
-        "ami_users": ""
+        "aws_env_version": "v1.0.0"
     },
     "builders": [
         {
