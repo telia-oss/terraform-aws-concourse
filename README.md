@@ -6,15 +6,11 @@ A Terraform module for deploying Concourse CI.
 
 ## Prerequisites
 
-1. Use [Packer](https://www.packer.io/) to create an AMI with Concourse and [lifecycled](https://github.com/buildkite/lifecycled) installed:
+1. Use [Packer](https://www.packer.io/) to create an AMI with Concourse (and related tooling installed) installed:
 
 ```bash
-packer validate template.json
-
-packer build \
-  -var="source_ami=<amazon-linux-2>" \
-  -var="concourse_version=v4.2.1" \
-  template.json
+# From the project root, using make:
+make ami
 ```
 
 2. Generate key pairs for Concourse:
@@ -30,9 +26,6 @@ ssh-keygen -t rsa -f ./keys/session_signing_key -N ''
 # Authorized workers
 cp ./keys/worker_key.pub ./keys/authorized_worker_keys
 ```
-
-
-NOTE: The `source_ami` for packer must be an Amazon Linux 2 AMI since the launch configuration uses systemd.
 
 ### Required for HTTPS
 
