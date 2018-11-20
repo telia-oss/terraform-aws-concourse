@@ -30,8 +30,10 @@
             "ami_users": "{{user `ami_users`}}",
             "tags": {
                 "source_ami": "{{ .SourceAMI }}",
+                "template_version": "{{user `template_version`}}",
                 "concourse_version": "{{user `concourse_version`}}",
-                "template_version": "{{user `template_version`}}"
+                "lifecycled_version": "{{user `lifecycled_version`}}",
+                "aws_env_version": "{{user `aws_env_version`}}"
             }
         }
     ],
