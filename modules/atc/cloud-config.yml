@@ -54,6 +54,8 @@ write_files:
       Environment="CONCOURSE_GITHUB_CLIENT_SECRET=${github_client_secret}"
       ${github_users}
       ${github_teams}
+      ${local_users}
+      ${local_admin}
 
       Environment="CONCOURSE_POSTGRES_HOST=${postgres_host}"
       Environment="CONCOURSE_POSTGRES_PORT=${postgres_port}"

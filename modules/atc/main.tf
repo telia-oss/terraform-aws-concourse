@@ -57,6 +57,9 @@ module "atc" {
   tags              = "${var.tags}"
 }
 
+locals {
+  local_user           = "${var.local_admin_username != "" ? "Environment=\"CONCOURSE_ADD_LOCAL_USER=${var.local_admin_username}:${var.local_admin_password}\"" : ""}"
+}
 data "template_file" "atc" {
   template = "${file("${path.module}/cloud-config.yml")}"
 
@@ -66,6 +69,8 @@ data "template_file" "atc" {
     target_group           = "${aws_lb_target_group.internal.arn}"
     atc_port               = "${var.atc_port}"
     tsa_port               = "${var.tsa_port}"
+    local_users            = "${local.local_user}"
+    local_admin            = "${var.local_admin_username}"
     github_client_id       = "${var.github_client_id}"
     github_client_secret   = "${var.github_client_secret}"
     github_users           = "${length(var.github_users) > 0 ? "Environment=\"CONCOURSE_MAIN_TEAM_GITHUB_USER=${join(",", var.github_users)}\"" : ""}"
