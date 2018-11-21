@@ -59,7 +59,14 @@ module "atc" {
 
 locals {
   local_user           = "${var.local_admin_username != "" ? "Environment=\"CONCOURSE_ADD_LOCAL_USER=${var.local_admin_username}:${var.local_admin_password}\"" : ""}"
+  github_users         = "${length(var.github_users) > 0 ? "Environment=\"CONCOURSE_MAIN_TEAM_GITHUB_USER=${join(",", var.github_users)}\"" : ""}"
+  github_teams         = "${length(var.github_teams) > 0 ? "Environment=\"CONCOURSE_MAIN_TEAM_GITHUB_TEAM=${join(",", var.github_teams)}\"" : ""}"
+  prometheus_bind_ip   = "${var.prometheus_enabled == "true" ? "Environment=\"CONCOURSE_PROMETHEUS_BIND_IP=0.0.0.0\"" : ""}"
+  prometheus_bind_port = "${var.prometheus_enabled == "true" ? "Environment=\"CONCOURSE_PROMETHEUS_BIND_PORT=${var.prometheus_port}\"" : ""}"
+  start_node_exporter  = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
+  concourse_web_host   = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
 }
+
 data "template_file" "atc" {
   template = "${file("${path.module}/cloud-config.yml")}"
 
@@ -73,12 +80,12 @@ data "template_file" "atc" {
     local_admin            = "${var.local_admin_username}"
     github_client_id       = "${var.github_client_id}"
     github_client_secret   = "${var.github_client_secret}"
-    github_users           = "${length(var.github_users) > 0 ? "Environment=\"CONCOURSE_MAIN_TEAM_GITHUB_USER=${join(",", var.github_users)}\"" : ""}"
-    github_teams           = "${length(var.github_teams) > 0 ? "Environment=\"CONCOURSE_MAIN_TEAM_GITHUB_TEAM=${join(",", var.github_teams)}\"" : ""}"
-    prometheus_bind_ip     = "${var.prometheus_enabled == "true" ? "Environment=\"CONCOURSE_PROMETHEUS_BIND_IP=0.0.0.0\"" : ""}"
-    prometheus_bind_port   = "${var.prometheus_enabled == "true" ? "Environment=\"CONCOURSE_PROMETHEUS_BIND_PORT=${var.prometheus_port}\"" : ""}"
-    start_node_exporter    = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
-    concourse_web_host     = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
+    github_users           = "${local.github_users}"
+    github_teams           = "${local.github_teams}"
+    prometheus_bind_ip     = "${local.prometheus_bind_ip}"
+    prometheus_bind_port   = "${local.prometheus_bind_port}"
+    start_node_exporter    = "${local.start_node_exporter}"
+    concourse_web_host     = "${local.concourse_web_host}"
     postgres_host          = "${var.postgres_host}"
     postgres_port          = "${var.postgres_port}"
     postgres_username      = "${var.postgres_username}"
