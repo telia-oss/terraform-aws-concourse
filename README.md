@@ -44,6 +44,19 @@ aws kms encrypt \
   --profile default
 ```
 
+Or you can add it to SSM Parameter store/Secrets Manager and [aws-env](https://github.com/telia-oss/aws-env) will populate the environment at runtime:
+
+```hcl
+module "concourse_atc" {
+  # ... other configuration
+
+  github_client_id     = "sm:///concourse-deployment/github-oauth-client-id"
+  github_client_secret = "sm:///concourse-deployment/github-oauth-client-secret"
+}
+```
+
+By default the ATC will have permissions to read secrets from `/concourse-deployment/*` in secrets manager (in addition to `/concourse/*` for the secrets backend).
+
 ## Usage
 
 See example. If you want to learn more about how to use Concourse,
