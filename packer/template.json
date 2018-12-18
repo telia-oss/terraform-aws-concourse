@@ -4,7 +4,7 @@
         "ami_users": "",
         "template_version": null,
         "concourse_version": "v4.2.1",
-        "lifecycled_version": "v3.0.0",
+        "lifecycled_version": "v3.0.1",
         "aws_env_version": "v1.0.0"
     },
     "builders": [
