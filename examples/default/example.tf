@@ -13,12 +13,11 @@ module "concourse" {
   web_certificate_arn  = "<certificate-arn>"
   authorized_cidr      = ["0.0.0.0/0"]
   private_subnet_count = 2
-
-  web_count        = 1
-  web_count_max    = 2
-  worker_count     = 1
-  worker_count_max = 2
-  ami_id           = "<packer-ami>"
+  web_count            = 1
+  web_count_max        = 2
+  worker_count         = 1
+  worker_count_max     = 2
+  ami_id               = "<packer-ami>"
 
   postgres_password               = "<kms-encrypted-secret>"
   encryption_key                  = "<kms-encrypted-secret>"

@@ -6,15 +6,11 @@ A Terraform module for deploying Concourse CI.
 
 ## Prerequisites
 
-1. Use [Packer](https://www.packer.io/) to create an AMI with Concourse and [lifecycled](https://github.com/buildkite/lifecycled) installed:
+1. Use [Packer](https://www.packer.io/) to create an AMI with Concourse (and related tooling installed) installed:
 
 ```bash
-packer validate template.json
-
-packer build \
-  -var="source_ami=<amazon-linux-2>" \
-  -var="concourse_version=v4.2.1" \
-  template.json
+# From the project root, using make:
+make ami
 ```
 
 2. Generate key pairs for Concourse:
@@ -30,8 +26,6 @@ ssh-keygen -t rsa -f ./keys/session_signing_key -N ''
 # Authorized workers
 cp ./keys/worker_key.pub ./keys/authorized_worker_keys
 ```
-
-NOTE: The `source_ami` for packer must be an Amazon Linux 2 AMI since the launch configuration uses systemd.
 
 ### Required for HTTPS
 
@@ -50,17 +44,18 @@ aws kms encrypt \
   --profile default
 ```
 
+Or you can add it to SSM Parameter store/Secrets Manager and [aws-env](https://github.com/telia-oss/aws-env) will populate the environment at runtime:
 
-3. Required (when using the root module) for the [Github Lambda](https://github.com/telia-oss/concourse-github-lambda)
+```hcl
+module "concourse_atc" {
+  # ... other configuration
 
-Create two Github Apps and add the [four required secrets](https://github.com/telia-oss/concourse-github-lambda#secrets) for the Github Lambda under the `/concourse-github-lambda/` path, e.g.:
-
-```bash
-aws secretsmanager create-secret \
-  --name /concourse-github-lambda/token-service/integration-id \
-  --secret-string "13024" \
-  --region eu-west-1
+  github_client_id     = "sm:///concourse-internal/github-oauth-client-id"
+  github_client_secret = "sm:///concourse-internal/github-oauth-client-secret"
+}
 ```
+
+By default the ATC will have permissions to read secrets from `/concourse-internal/*` in secrets manager (in addition to `/concourse/*` for the secrets backend).
 
 ## Usage
 

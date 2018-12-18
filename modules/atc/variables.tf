@@ -94,6 +94,16 @@ variable "github_teams" {
   default     = []
 }
 
+variable "local_user" {
+  description = "Create a local user (format: username:password)."
+  default     = ""
+}
+
+variable "local_admin_user" {
+  description = "Add the local user to the main team to grant admin privileges (format: username)."
+  default     = ""
+}
+
 variable "domain" {
   description = "The (domain) name of the record."
   default     = ""

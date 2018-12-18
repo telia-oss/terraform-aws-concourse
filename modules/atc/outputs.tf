@@ -13,8 +13,16 @@ output "security_group_id" {
   value = "${module.atc.security_group_id}"
 }
 
+output "external_lb_arn" {
+  value = "${module.external_lb.arn}"
+}
+
 output "external_lb_sg" {
   value = "${module.external_lb.security_group_id}"
+}
+
+output "internal_lb_arn" {
+  value = "${module.internal_lb.arn}"
 }
 
 output "internal_lb_sg" {
