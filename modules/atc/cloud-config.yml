@@ -55,7 +55,7 @@ write_files:
       ${github_users}
       ${github_teams}
       ${local_user}
-      ${local_admin}
+      ${local_admin_user}
 
       Environment="CONCOURSE_POSTGRES_HOST=${postgres_host}"
       Environment="CONCOURSE_POSTGRES_PORT=${postgres_port}"

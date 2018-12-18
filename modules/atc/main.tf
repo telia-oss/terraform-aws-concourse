@@ -59,8 +59,8 @@ module "atc" {
 
 locals {
   template             = "Environment=\"%s=%s\""
-  local_user           = "${var.local_admin_username != "" ? format(local.template, "CONCOURSE_ADD_LOCAL_USER", "${var.local_admin_username}:${var.local_admin_password}") : ""}"
-  local_admin          = "${var.local_admin_username != "" ? format(local.template, "CONCOURSE_MAIN_TEAM_LOCAL_USER", "${var.local_admin_username}") : ""}"
+  local_user           = "${var.local_user != "" ? format(local.template, "CONCOURSE_ADD_LOCAL_USER", var.local_user) : ""}"
+  local_admin_user     = "${var.local_admin_user != "" ? format(local.template, "CONCOURSE_MAIN_TEAM_LOCAL_USER", var.local_admin_user) : ""}"
   github_users         = "${length(var.github_users) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_USER", join(",", var.github_users)) : ""}"
   github_teams         = "${length(var.github_teams) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_TEAM", join(",", var.github_teams)) : ""}"
   prometheus_bind_ip   = "${var.prometheus_enabled == "true" ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_IP", "0.0.0.0") : ""}"
@@ -79,7 +79,7 @@ data "template_file" "atc" {
     atc_port               = "${var.atc_port}"
     tsa_port               = "${var.tsa_port}"
     local_user             = "${local.local_user}"
-    local_admin            = "${local.local_admin}"
+    local_admin_user       = "${local.local_admin_user}"
     github_client_id       = "${var.github_client_id}"
     github_client_secret   = "${var.github_client_secret}"
     github_users           = "${local.github_users}"
