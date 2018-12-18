@@ -10,13 +10,18 @@ data "aws_subnet_ids" "main" {
   vpc_id = "${data.aws_vpc.main.id}"
 }
 
+locals {
+  instance_ami      = "<packer-ami>"
+  postgres_password = "dolphins"
+}
+
 module "postgres" {
   source  = "telia-oss/rds-cluster/aws"
   version = "0.3.0"
 
   name_prefix = "example"
   username    = "superuser"
-  password    = "<postgres-password>"
+  password    = "${local.postgres_password}"
   engine      = "aurora-postgresql"
   port        = "5439"
   vpc_id      = "${data.aws_vpc.main.id}"
@@ -42,14 +47,16 @@ module "concourse_atc" {
   postgres_host        = "${module.postgres.endpoint}"
   postgres_port        = "${module.postgres.port}"
   postgres_username    = "${module.postgres.username}"
-  postgres_password    = "<postgres-password>"
+  postgres_password    = "${local.postgres_password}"
   postgres_database    = "${module.postgres.database_name}"
   encryption_key       = ""
-  instance_ami         = "<packer-ami>"
-  github_client_id     = "<github-client>"
-  github_client_secret = "<github-secret>"
+  instance_ami         = "${local.instance_ami}"
+  github_client_id     = "sm:///concourse-internal/github-oauth-client-id"
+  github_client_secret = "sm:///concourse-internal/github-oauth-client-secret"
   github_users         = ["itsdalmo"]
   github_teams         = ["telia-oss:concourse-owners"]
+  local_user           = "sm:///concourse-internal/admin-user"
+  local_admin_user     = "admin"
 
   tags {
     environment = "prod"
@@ -67,7 +74,7 @@ module "concourse_worker" {
   atc_sg             = "${module.concourse_atc.security_group_id}"
   tsa_host           = "${module.concourse_atc.tsa_host}"
   tsa_port           = "${module.concourse_atc.tsa_port}"
-  instance_ami       = "<packer-ami>"
+  instance_ami       = "${local.instance_ami}"
 
   tags {
     environment = "prod"
@@ -109,6 +116,23 @@ data "aws_iam_policy_document" "worker" {
 
     resources = ["*"]
   }
+}
+
+# Add privileges for SSM agent on both clusters
+module "atc_ssm_agent" {
+  source  = "telia-oss/ssm-agent-policy/aws"
+  version = "0.1.0"
+
+  name_prefix = "example-atc"
+  role        = "${module.concourse_atc.role_name}"
+}
+
+module "worker_ssm_agent" {
+  source  = "telia-oss/ssm-agent-policy/aws"
+  version = "0.1.0"
+
+  name_prefix = "example-worker"
+  role        = "${module.concourse_worker.role_name}"
 }
 
 output "endpoint" {

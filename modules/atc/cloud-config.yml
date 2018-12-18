@@ -54,6 +54,8 @@ write_files:
       Environment="CONCOURSE_GITHUB_CLIENT_SECRET=${github_client_secret}"
       ${github_users}
       ${github_teams}
+      ${local_user}
+      ${local_admin_user}
 
       Environment="CONCOURSE_POSTGRES_HOST=${postgres_host}"
       Environment="CONCOURSE_POSTGRES_PORT=${postgres_port}"
@@ -74,7 +76,7 @@ write_files:
       ${prometheus_bind_port}
 
       ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_URL=http://$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4):${atc_port}"
-      ExecStart=/usr/local/bin/concourse web --aws-secretsmanager-region=${region}
+      ExecStart=/usr/local/bin/aws-env exec -- /usr/local/bin/concourse web --aws-secretsmanager-region=${region}
 
       [Install]
       WantedBy=multi-user.target
