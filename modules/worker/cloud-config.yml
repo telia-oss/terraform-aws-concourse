@@ -114,7 +114,8 @@ write_files:
 
       [Service]
       Type=simple
-      Restart=always
+      Restart=on-failure
+      RestartSec=30s
       TimeoutSec=infinity
 
       Environment="AWS_REGION=${region}"
