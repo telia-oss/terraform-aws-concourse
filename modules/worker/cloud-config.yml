@@ -60,12 +60,12 @@ write_files:
       Environment="CONCOURSE_BAGGAGECLAIM_LOG_LEVEL=${log_level}"
       Environment="CONCOURSE_TSA_PUBLIC_KEY=/concourse/keys/worker/tsa_host_key.pub"
       Environment="CONCOURSE_TSA_WORKER_PRIVATE_KEY=/concourse/keys/worker/worker_key"
+      Environment="CONCOURSE_REBALANCE_INTERVAL=30m"
 
       ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_NAME=$(curl -L http://169.254.169.254/latest/meta-data/instance-id)"
-      ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_IP=$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4)"
-      ExecStart=/usr/local/bin/concourse worker
+      ExecStart=/usr/local/concourse/bin/concourse worker
 
-      ExecStop=/usr/local/bin/concourse retire-worker
+      ExecStop=/usr/local/concourse/bin/concourse retire-worker
       ExecStop=/bin/bash -c "while pgrep concourse >> /dev/null; do echo draining worker... && sleep 5; done; echo done draining!"
 
       [Install]

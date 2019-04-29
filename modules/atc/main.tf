@@ -9,6 +9,15 @@ data "aws_vpc" "concourse" {
   id = "${var.vpc_id}"
 }
 
+resource "aws_security_group_rule" "lb_ingress_atc" {
+  security_group_id        = "${module.atc.security_group_id}"
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = "${var.atc_port}"
+  to_port                  = "${var.atc_port}"
+  source_security_group_id = "${module.external_lb.security_group_id}"
+}
+
 resource "aws_security_group_rule" "workers_ingress_tsa" {
   security_group_id = "${module.atc.security_group_id}"
   type              = "ingress"
@@ -18,13 +27,13 @@ resource "aws_security_group_rule" "workers_ingress_tsa" {
   cidr_blocks       = ["${data.aws_vpc.concourse.cidr_block}"]
 }
 
-resource "aws_security_group_rule" "lb_ingress_atc" {
-  security_group_id        = "${module.atc.security_group_id}"
-  type                     = "ingress"
-  protocol                 = "tcp"
-  from_port                = "${var.atc_port}"
-  to_port                  = "${var.atc_port}"
-  source_security_group_id = "${module.external_lb.security_group_id}"
+resource "aws_security_group_rule" "tsa_ingress_peers" {
+  security_group_id = "${module.atc.security_group_id}"
+  type              = "ingress"
+  protocol          = "-1"
+  from_port         = "0"
+  to_port           = "0"
+  self              = "true"
 }
 
 resource "aws_autoscaling_attachment" "external_lb" {
@@ -156,7 +165,7 @@ data "aws_iam_policy_document" "atc" {
 
     resources = [
       "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:/concourse/*",
-      "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:/concourse-internal/*",
+      "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:/concourse-deployment/*",
     ]
   }
 }
@@ -262,6 +271,7 @@ resource "aws_lb_target_group" "internal" {
   port     = "${var.tsa_port}"
   protocol = "TCP"
 
+  # NOTE: This generates INFO log entries (error: EOF) since TSA will attempt to handshake the healthchecks.
   health_check {
     protocol            = "TCP"
     port                = "${var.tsa_port}"

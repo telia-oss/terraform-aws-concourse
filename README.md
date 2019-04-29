@@ -50,12 +50,12 @@ Or you can add it to SSM Parameter store/Secrets Manager and [aws-env](https://g
 module "concourse_atc" {
   # ... other configuration
 
-  github_client_id     = "sm:///concourse-internal/github-oauth-client-id"
-  github_client_secret = "sm:///concourse-internal/github-oauth-client-secret"
+  github_client_id     = "sm:///concourse-deployment/github-oauth-client-id"
+  github_client_secret = "sm:///concourse-deployment/github-oauth-client-secret"
 }
 ```
 
-By default the ATC will have permissions to read secrets from `/concourse-internal/*` in secrets manager (in addition to `/concourse/*` for the secrets backend).
+By default the ATC will have permissions to read secrets from `/concourse-deployment/*` in secrets manager (in addition to `/concourse/*` for the secrets backend).
 
 ## Usage
 
