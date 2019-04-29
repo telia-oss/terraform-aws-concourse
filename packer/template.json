@@ -3,9 +3,9 @@
         "source_ami": "",
         "ami_users": "",
         "template_version": null,
-        "concourse_version": "v4.2.1",
-        "lifecycled_version": "v3.0.2",
-        "aws_env_version": "v1.0.0"
+        "concourse_version": "5.1.0",
+        "lifecycled_version": "3.0.2",
+        "aws_env_version": "1.0.0"
     },
     "builders": [
         {
@@ -49,16 +49,14 @@
         {
             "type": "shell",
             "inline": [
-                "curl -L https://github.com/concourse/concourse/releases/download/{{user `concourse_version`}}/concourse_linux_amd64 -o concourse",
-                "sudo chmod +x concourse",
-                "sudo chown root:root concourse",
-                "sudo mv concourse /usr/local/bin/concourse"
+                "curl -L https://github.com/concourse/concourse/releases/download/v{{user `concourse_version`}}/concourse-{{user `concourse_version`}}-linux-amd64.tgz -o /tmp/concourse-linux-amd64.tgz",
+                "sudo tar -xvzf /tmp/concourse-linux-amd64.tgz -C /usr/local"
             ]
         },
         {
             "type": "shell",
             "inline": [
-                "curl -L https://github.com/buildkite/lifecycled/releases/download/{{user `lifecycled_version`}}/lifecycled-linux-amd64 -o lifecycled",
+                "curl -L https://github.com/buildkite/lifecycled/releases/download/v{{user `lifecycled_version`}}/lifecycled-linux-amd64 -o lifecycled",
                 "sudo chmod +x lifecycled",
                 "sudo chown root:root lifecycled",
                 "sudo mv lifecycled /usr/local/bin/lifecycled"
@@ -67,7 +65,7 @@
         {
             "type": "shell",
             "inline": [
-                "curl -L https://github.com/telia-oss/aws-env/releases/download/{{user `aws_env_version`}}/aws-env-linux-amd64 -o aws-env",
+                "curl -L https://github.com/telia-oss/aws-env/releases/download/v{{user `aws_env_version`}}/aws-env-linux-amd64 -o aws-env",
                 "sudo chmod +x aws-env",
                 "sudo chown root:root aws-env",
                 "sudo mv aws-env /usr/local/bin/aws-env"

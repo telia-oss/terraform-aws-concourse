@@ -71,12 +71,13 @@ write_files:
       Environment="CONCOURSE_SESSION_SIGNING_KEY=/concourse/keys/web/session_signing_key"
       Environment="CONCOURSE_ENCRYPTION_KEY=${encryption_key}"
       Environment="CONCOURSE_OLD_ENCRYPTION_KEY=${old_encryption_key}"
+      Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=${region}"
 
       ${prometheus_bind_ip}
       ${prometheus_bind_port}
 
-      ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_URL=http://$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4):${atc_port}"
-      ExecStart=/usr/local/bin/aws-env exec -- /usr/local/bin/concourse web --aws-secretsmanager-region=${region}
+      ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_ADDRESS=$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4)"
+      ExecStart=/usr/local/bin/aws-env exec -- /usr/local/concourse/bin/concourse web
 
       [Install]
       WantedBy=multi-user.target

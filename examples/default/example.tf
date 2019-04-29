@@ -11,6 +11,7 @@ data "aws_subnet_ids" "main" {
 }
 
 locals {
+  name_prefix       = "concourse-example"
   instance_ami      = "<packer-ami>"
   postgres_password = "dolphins"
 }
@@ -19,7 +20,7 @@ module "postgres" {
   source  = "telia-oss/rds-cluster/aws"
   version = "0.3.0"
 
-  name_prefix = "example"
+  name_prefix = "${local.name_prefix}"
   username    = "superuser"
   password    = "${local.postgres_password}"
   engine      = "aurora-postgresql"
@@ -36,7 +37,7 @@ module "postgres" {
 module "concourse_atc" {
   source = "../../modules/atc"
 
-  name_prefix          = "example"
+  name_prefix          = "${local.name_prefix}"
   web_protocol         = "HTTP"
   web_port             = "80"
   authorized_cidr      = ["0.0.0.0/0"]
@@ -51,15 +52,15 @@ module "concourse_atc" {
   postgres_database    = "${module.postgres.database_name}"
   encryption_key       = ""
   instance_ami         = "${local.instance_ami}"
-  github_client_id     = "sm:///concourse-internal/github-oauth-client-id"
-  github_client_secret = "sm:///concourse-internal/github-oauth-client-secret"
+  github_client_id     = "sm:///concourse-deployment/github-oauth-client-id"
+  github_client_secret = "sm:///concourse-deployment/github-oauth-client-secret"
   github_users         = ["itsdalmo"]
   github_teams         = ["telia-oss:concourse-owners"]
-  local_user           = "sm:///concourse-internal/admin-user"
+  local_user           = "sm:///concourse-deployment/admin-user"
   local_admin_user     = "admin"
 
   tags {
-    environment = "prod"
+    environment = "dev"
     terraform   = "True"
   }
 }
@@ -67,7 +68,7 @@ module "concourse_atc" {
 module "concourse_worker" {
   source = "../../modules/worker"
 
-  name_prefix        = "example"
+  name_prefix        = "${local.name_prefix}"
   concourse_keys     = "${path.root}/keys"
   vpc_id             = "${data.aws_vpc.main.id}"
   private_subnet_ids = ["${data.aws_subnet_ids.main.ids}"]
@@ -77,7 +78,7 @@ module "concourse_worker" {
   instance_ami       = "${local.instance_ami}"
 
   tags {
-    environment = "prod"
+    environment = "dev"
     terraform   = "True"
   }
 }
@@ -94,7 +95,7 @@ resource "aws_security_group_rule" "atc_ingress_postgres" {
 
 # Allow workers to fetch ECR images
 resource "aws_iam_role_policy" "main" {
-  name   = "example-worker-ecr-policy"
+  name   = "${local.name_prefix}-worker-ecr-policy"
   role   = "${module.concourse_worker.role_name}"
   policy = "${data.aws_iam_policy_document.worker.json}"
 }
@@ -123,7 +124,7 @@ module "atc_ssm_agent" {
   source  = "telia-oss/ssm-agent-policy/aws"
   version = "0.1.0"
 
-  name_prefix = "example-atc"
+  name_prefix = "${local.name_prefix}-atc"
   role        = "${module.concourse_atc.role_name}"
 }
 
@@ -131,7 +132,7 @@ module "worker_ssm_agent" {
   source  = "telia-oss/ssm-agent-policy/aws"
   version = "0.1.0"
 
-  name_prefix = "example-worker"
+  name_prefix = "${local.name_prefix}-worker"
   role        = "${module.concourse_worker.role_name}"
 }
 
