@@ -1,34 +1,36 @@
 # -------------------------------------------------------------------------------
 # Resources
 # -------------------------------------------------------------------------------
-data "aws_region" "current" {}
+data "aws_region" "current" {
+}
 
-data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "current" {
+}
 
 data "aws_vpc" "concourse" {
-  id = "${var.vpc_id}"
+  id = var.vpc_id
 }
 
 resource "aws_security_group_rule" "lb_ingress_atc" {
-  security_group_id        = "${module.atc.security_group_id}"
+  security_group_id        = module.atc.security_group_id
   type                     = "ingress"
   protocol                 = "tcp"
-  from_port                = "${var.atc_port}"
-  to_port                  = "${var.atc_port}"
-  source_security_group_id = "${module.external_lb.security_group_id}"
+  from_port                = var.atc_port
+  to_port                  = var.atc_port
+  source_security_group_id = module.external_lb.security_group_id
 }
 
 resource "aws_security_group_rule" "workers_ingress_tsa" {
-  security_group_id = "${module.atc.security_group_id}"
+  security_group_id = module.atc.security_group_id
   type              = "ingress"
   protocol          = "tcp"
-  from_port         = "${var.tsa_port}"
-  to_port           = "${var.tsa_port}"
-  cidr_blocks       = ["${data.aws_vpc.concourse.cidr_block}"]
+  from_port         = var.tsa_port
+  to_port           = var.tsa_port
+  cidr_blocks       = [data.aws_vpc.concourse.cidr_block]
 }
 
 resource "aws_security_group_rule" "tsa_ingress_peers" {
-  security_group_id = "${module.atc.security_group_id}"
+  security_group_id = module.atc.security_group_id
   type              = "ingress"
   protocol          = "-1"
   from_port         = "0"
@@ -37,13 +39,13 @@ resource "aws_security_group_rule" "tsa_ingress_peers" {
 }
 
 resource "aws_autoscaling_attachment" "external_lb" {
-  autoscaling_group_name = "${module.atc.id}"
-  alb_target_group_arn   = "${aws_lb_target_group.external.arn}"
+  autoscaling_group_name = module.atc.id
+  alb_target_group_arn   = aws_lb_target_group.external.arn
 }
 
 resource "aws_autoscaling_attachment" "internal_lb" {
-  autoscaling_group_name = "${module.atc.id}"
-  alb_target_group_arn   = "${aws_lb_target_group.internal.arn}"
+  autoscaling_group_name = module.atc.id
+  alb_target_group_arn   = aws_lb_target_group.internal.arn
 }
 
 module "atc" {
@@ -51,64 +53,64 @@ module "atc" {
   version = "0.2.0"
 
   name_prefix       = "${var.name_prefix}-atc"
-  user_data         = "${data.template_file.atc.rendered}"
-  vpc_id            = "${var.vpc_id}"
-  subnet_ids        = "${var.private_subnet_ids}"
-  min_size          = "${var.min_size}"
-  max_size          = "${var.max_size}"
-  instance_type     = "${var.instance_type}"
-  instance_ami      = "${var.instance_ami}"
-  instance_key      = "${var.instance_key}"
-  instance_policy   = "${data.aws_iam_policy_document.atc.json}"
+  user_data         = data.template_file.atc.rendered
+  vpc_id            = var.vpc_id
+  subnet_ids        = var.private_subnet_ids
+  min_size          = var.min_size
+  max_size          = var.max_size
+  instance_type     = var.instance_type
+  instance_ami      = var.instance_ami
+  instance_key      = var.instance_key
+  instance_policy   = data.aws_iam_policy_document.atc.json
   await_signal      = "true"
   pause_time        = "PT5M"
   health_check_type = "ELB"
-  tags              = "${var.tags}"
+  tags              = var.tags
 }
 
 locals {
   template             = "Environment=\"%s=%s\""
-  local_user           = "${var.local_user != "" ? format(local.template, "CONCOURSE_ADD_LOCAL_USER", var.local_user) : ""}"
-  local_admin_user     = "${var.local_admin_user != "" ? format(local.template, "CONCOURSE_MAIN_TEAM_LOCAL_USER", var.local_admin_user) : ""}"
-  github_users         = "${length(var.github_users) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_USER", join(",", var.github_users)) : ""}"
-  github_teams         = "${length(var.github_teams) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_TEAM", join(",", var.github_teams)) : ""}"
-  prometheus_bind_ip   = "${var.prometheus_enabled == "true" ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_IP", "0.0.0.0") : ""}"
-  prometheus_bind_port = "${var.prometheus_enabled == "true" ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_PORT", var.prometheus_port) : ""}"
-  start_node_exporter  = "${var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""}"
+  local_user           = var.local_user != "" ? format(local.template, "CONCOURSE_ADD_LOCAL_USER", var.local_user) : ""
+  local_admin_user     = var.local_admin_user != "" ? format(local.template, "CONCOURSE_MAIN_TEAM_LOCAL_USER", var.local_admin_user) : ""
+  github_users         = length(var.github_users) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_USER", join(",", var.github_users)) : ""
+  github_teams         = length(var.github_teams) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_TEAM", join(",", var.github_teams)) : ""
+  prometheus_bind_ip   = var.prometheus_enabled == "true" ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_IP", "0.0.0.0") : ""
+  prometheus_bind_port = var.prometheus_enabled == "true" ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_PORT", var.prometheus_port) : ""
+  start_node_exporter  = var.prometheus_enabled == "true" ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""
   concourse_web_host   = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
 }
 
 data "template_file" "atc" {
-  template = "${file("${path.module}/cloud-config.yml")}"
+  template = file("${path.module}/cloud-config.yml")
 
-  vars {
+  vars = {
     stack_name             = "${var.name_prefix}-atc-asg"
-    region                 = "${data.aws_region.current.name}"
-    target_group           = "${aws_lb_target_group.internal.arn}"
-    atc_port               = "${var.atc_port}"
-    tsa_port               = "${var.tsa_port}"
-    local_user             = "${local.local_user}"
-    local_admin_user       = "${local.local_admin_user}"
-    github_client_id       = "${var.github_client_id}"
-    github_client_secret   = "${var.github_client_secret}"
-    github_users           = "${local.github_users}"
-    github_teams           = "${local.github_teams}"
-    prometheus_bind_ip     = "${local.prometheus_bind_ip}"
-    prometheus_bind_port   = "${local.prometheus_bind_port}"
-    start_node_exporter    = "${local.start_node_exporter}"
-    concourse_web_host     = "${local.concourse_web_host}"
-    postgres_host          = "${var.postgres_host}"
-    postgres_port          = "${var.postgres_port}"
-    postgres_username      = "${var.postgres_username}"
-    postgres_password      = "${var.postgres_password}"
-    postgres_database      = "${var.postgres_database}"
-    log_group_name         = "${aws_cloudwatch_log_group.atc.name}"
-    log_level              = "${var.log_level}"
-    tsa_host_key           = "${file("${var.concourse_keys}/tsa_host_key")}"
-    session_signing_key    = "${file("${var.concourse_keys}/session_signing_key")}"
-    authorized_worker_keys = "${file("${var.concourse_keys}/authorized_worker_keys")}"
-    encryption_key         = "${var.encryption_key}"
-    old_encryption_key     = "${var.old_encryption_key}"
+    region                 = data.aws_region.current.name
+    target_group           = aws_lb_target_group.internal.arn
+    atc_port               = var.atc_port
+    tsa_port               = var.tsa_port
+    local_user             = local.local_user
+    local_admin_user       = local.local_admin_user
+    github_client_id       = var.github_client_id
+    github_client_secret   = var.github_client_secret
+    github_users           = local.github_users
+    github_teams           = local.github_teams
+    prometheus_bind_ip     = local.prometheus_bind_ip
+    prometheus_bind_port   = local.prometheus_bind_port
+    start_node_exporter    = local.start_node_exporter
+    concourse_web_host     = local.concourse_web_host
+    postgres_host          = var.postgres_host
+    postgres_port          = var.postgres_port
+    postgres_username      = var.postgres_username
+    postgres_password      = var.postgres_password
+    postgres_database      = var.postgres_database
+    log_group_name         = aws_cloudwatch_log_group.atc.name
+    log_level              = var.log_level
+    tsa_host_key           = file("${var.concourse_keys}/tsa_host_key")
+    session_signing_key    = file("${var.concourse_keys}/session_signing_key")
+    authorized_worker_keys = file("${var.concourse_keys}/authorized_worker_keys")
+    encryption_key         = var.encryption_key
+    old_encryption_key     = var.old_encryption_key
   }
 }
 
@@ -121,7 +123,7 @@ data "aws_iam_policy_document" "atc" {
     effect = "Allow"
 
     resources = [
-      "${aws_cloudwatch_log_group.atc.arn}",
+      aws_cloudwatch_log_group.atc.arn,
     ]
 
     actions = [
@@ -171,23 +173,23 @@ data "aws_iam_policy_document" "atc" {
 }
 
 resource "aws_security_group_rule" "ingress" {
-  security_group_id = "${module.external_lb.security_group_id}"
+  security_group_id = module.external_lb.security_group_id
   type              = "ingress"
   protocol          = "tcp"
-  from_port         = "${var.web_port}"
-  to_port           = "${var.web_port}"
-  cidr_blocks       = ["${var.authorized_cidr}"]
+  from_port         = var.web_port
+  to_port           = var.web_port
+  cidr_blocks       = var.authorized_cidr
 }
 
 resource "aws_route53_record" "main" {
-  count   = "${var.domain == "" ? 0 : 1}"
-  zone_id = "${var.zone_id}"
-  name    = "${var.domain}"
+  count   = var.domain == "" ? 0 : 1
+  zone_id = var.zone_id
+  name    = var.domain
   type    = "A"
 
   alias {
-    name                   = "${module.external_lb.dns_name}"
-    zone_id                = "${module.external_lb.zone_id}"
+    name                   = module.external_lb.dns_name
+    zone_id                = module.external_lb.zone_id
     evaluate_target_health = false
   }
 }
@@ -197,29 +199,29 @@ module "external_lb" {
   version = "0.2.0"
 
   name_prefix = "${var.name_prefix}-external"
-  vpc_id      = "${var.vpc_id}"
-  subnet_ids  = "${var.public_subnet_ids}"
+  vpc_id      = var.vpc_id
+  subnet_ids  = var.public_subnet_ids
   type        = "application"
   internal    = "false"
-  tags        = "${var.tags}"
+  tags        = var.tags
 }
 
 resource "aws_lb_listener" "external" {
-  load_balancer_arn = "${module.external_lb.arn}"
-  port              = "${var.web_port}"
-  protocol          = "${upper(var.web_protocol)}"
-  certificate_arn   = "${var.web_certificate_arn}"
-  ssl_policy        = "${var.web_certificate_arn == "" ? "" : "ELBSecurityPolicy-TLS-1-2-2017-01"}"
+  load_balancer_arn = module.external_lb.arn
+  port              = var.web_port
+  protocol          = upper(var.web_protocol)
+  certificate_arn   = var.web_certificate_arn
+  ssl_policy        = var.web_certificate_arn == "" ? "" : "ELBSecurityPolicy-TLS-1-2-2017-01"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.external.arn}"
+    target_group_arn = aws_lb_target_group.external.arn
     type             = "forward"
   }
 }
 
 resource "aws_lb_target_group" "external" {
-  vpc_id   = "${var.vpc_id}"
-  port     = "${var.atc_port}"
+  vpc_id   = var.vpc_id
+  port     = var.atc_port
   protocol = "HTTP"
 
   health_check {
@@ -240,7 +242,12 @@ resource "aws_lb_target_group" "external" {
     create_before_destroy = true
   }
 
-  tags = "${merge(var.tags, map("Name", "${var.name_prefix}-target-${var.atc_port}"))}"
+  tags = merge(
+    var.tags,
+    {
+      "Name" = "${var.name_prefix}-target-${var.atc_port}"
+    },
+  )
 }
 
 module "internal_lb" {
@@ -248,33 +255,33 @@ module "internal_lb" {
   version = "0.2.0"
 
   name_prefix = "${var.name_prefix}-internal"
-  vpc_id      = "${var.vpc_id}"
-  subnet_ids  = "${var.private_subnet_ids}"
+  vpc_id      = var.vpc_id
+  subnet_ids  = var.private_subnet_ids
   type        = "network"
   internal    = "true"
-  tags        = "${var.tags}"
+  tags        = var.tags
 }
 
 resource "aws_lb_listener" "internal" {
-  load_balancer_arn = "${module.internal_lb.arn}"
-  port              = "${var.tsa_port}"
+  load_balancer_arn = module.internal_lb.arn
+  port              = var.tsa_port
   protocol          = "TCP"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.internal.arn}"
+    target_group_arn = aws_lb_target_group.internal.arn
     type             = "forward"
   }
 }
 
 resource "aws_lb_target_group" "internal" {
-  vpc_id   = "${var.vpc_id}"
-  port     = "${var.tsa_port}"
+  vpc_id   = var.vpc_id
+  port     = var.tsa_port
   protocol = "TCP"
 
   # NOTE: This generates INFO log entries (error: EOF) since TSA will attempt to handshake the healthchecks.
   health_check {
     protocol            = "TCP"
-    port                = "${var.tsa_port}"
+    port                = var.tsa_port
     interval            = "30"
     healthy_threshold   = "2"
     unhealthy_threshold = "2"
@@ -287,5 +294,11 @@ resource "aws_lb_target_group" "internal" {
     create_before_destroy = true
   }
 
-  tags = "${merge(var.tags, map("Name", "${var.name_prefix}-target-${var.tsa_port}"))}"
+  tags = merge(
+    var.tags,
+    {
+      "Name" = "${var.name_prefix}-target-${var.tsa_port}"
+    },
+  )
 }
+

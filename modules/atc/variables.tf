@@ -11,17 +11,17 @@ variable "vpc_id" {
 
 variable "public_subnet_ids" {
   description = "ID of subnets where public resources (public LB) can be provisioned."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "private_subnet_ids" {
   description = "ID of subnets where private resources (ATC and private LB) can be provisioned."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "authorized_cidr" {
   description = "List of authorized CIDR blocks which can reach the Concourse web interface."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "min_size" {
@@ -84,13 +84,13 @@ variable "github_client_secret" {
 
 variable "github_users" {
   description = "GitHub user to permit admin access."
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "github_teams" {
   description = "GitHub team whose members will have admin access (<org>:<team>)."
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
@@ -165,6 +165,7 @@ variable "log_level" {
 
 variable "tags" {
   description = "A map of tags (key-value pairs) passed to resources."
-  type        = "map"
+  type        = map(string)
   default     = {}
 }
+
