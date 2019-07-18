@@ -50,7 +50,7 @@ resource "aws_autoscaling_attachment" "internal_lb" {
 
 module "atc" {
   source  = "telia-oss/asg/aws"
-  version = "0.2.0"
+  version = "2.0.0"
 
   name_prefix       = "${var.name_prefix}-atc"
   user_data         = data.template_file.atc.rendered
@@ -62,7 +62,7 @@ module "atc" {
   instance_ami      = var.instance_ami
   instance_key      = var.instance_key
   instance_policy   = data.aws_iam_policy_document.atc.json
-  await_signal      = "true"
+  await_signal      = true
   pause_time        = "PT5M"
   health_check_type = "ELB"
   tags              = var.tags
