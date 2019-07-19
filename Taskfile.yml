@@ -1,0 +1,92 @@
+version: '2'
+
+vars:
+  DIRECTORIES:
+    sh: find . -type f -name '*.tf' -not -path "**/.terraform/*" -exec dirname {} \; | sort -u
+  FILES:
+    sh: find . -type f -name '*.tf' -not -path "**/.terraform/*"
+  VERSION:
+    sh: git describe --tags --candidates=1 --dirty 2>/dev/null || echo "dev"
+
+tasks:
+  default:
+    cmds:
+    - task: test
+
+  test:
+    desc: Run all tests.
+    silent: true
+    cmds:
+    - task: fmt
+    - task: validate
+
+  tidy:
+    desc: Tidy all the things.
+    silent: true
+    cmds:
+    - go mod tidy
+    - |
+      for f in $(echo "{{.FILES}}"); do 
+        sed -i '' -E "s/^([ ]*version[ ]*=[ ]*)\"([^\"]*)\"/\\1\"{{.PROVIDER_VERSION}}\"/g" $f
+        sed -i '' -E "s/^([ ]*required_version[ ]*=[ ]*)\"([^\"]*)\"/\\1\"{{.TERRAFORM_VERSION}}\"/g" $f
+      done
+    vars:
+      TERRAFORM_VERSION: '>= 0.12'
+      PROVIDER_VERSION:  '>= 2.17'
+
+  ami:
+    desc: Build the packer template to create a Concourse AMI.
+    silent: true
+    cmds:
+    - packer validate -var="template_version={{.VERSION}}" packer/template.json
+    - packer build -var="template_version={{.VERSION}}" packer/template.json
+
+  e2e:
+    desc: Run the end 2 end test suite.
+    cmds:
+    - go test -v ./... -timeout=1h
+    
+  fmt:
+    desc: Check formatting of all terraform files.
+    silent: true
+    cmds:
+    - task: command
+      vars:
+        COMMAND: terraform fmt
+        ARGS: -check=true -write=true -list=false -recursive=false
+        PIPE:
+
+  validate:
+    desc: Validate all terraform directories.
+    silent: true
+    cmds:
+    - task: command
+      vars:
+        COMMAND: terraform init
+        ARGS: -backend=false -input=false -get=true -get-plugins=true -no-color
+        PIPE: '> /dev/null'
+    - task: command
+      vars:
+        COMMAND: terraform validate
+        ARGS: 
+        PIPE: '> /dev/null'
+
+  command:
+    desc: Run a command on the terraform directories. 
+    silent: true
+    cmds:
+    - |
+      BOLD=$(tput bold)
+      NORM=$(tput sgr0)
+      DIR=$(pwd)
+
+      echo "${BOLD} {{.COMMAND}}:${NORM}"
+      for d in $(echo "{{.DIRECTORIES}}"); do 
+        cd $d
+        if ! {{.COMMAND}} {{.ARGS}} {{.PIPE}}; then
+          echo "  ✗ $d" && exit $?
+        else
+          echo "  √ $d"
+        fi
+        cd $DIR
+      done
