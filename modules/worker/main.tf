@@ -37,7 +37,7 @@ module "worker" {
   version = "2.0.0"
 
   name_prefix          = "${var.name_prefix}-worker"
-  user_data            = data.template_file.worker.rendered
+  user_data            = local.user_data
   vpc_id               = var.vpc_id
   subnet_ids           = var.private_subnet_ids
   min_size             = var.min_size
@@ -51,12 +51,11 @@ module "worker" {
   pause_time           = "PT5M"
   health_check_type    = "EC2"
   tags                 = var.tags
+
 }
 
-data "template_file" "worker" {
-  template = file("${path.module}/cloud-config.yml")
-
-  vars = {
+locals {
+  user_data = templatefile("${path.module}/cloud-config.yml", {
     stack_name                = "${var.name_prefix}-worker-asg"
     region                    = data.aws_region.current.name
     lifecycle_topic           = aws_sns_topic.worker.arn
@@ -70,7 +69,7 @@ data "template_file" "worker" {
     pub_worker_key            = file("${var.concourse_keys}/worker_key.pub")
     pub_tsa_host_key          = file("${var.concourse_keys}/tsa_host_key.pub")
     start_node_exporter       = var.prometheus_enabled ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""
-  }
+  })
 }
 
 resource "aws_cloudwatch_log_group" "worker" {

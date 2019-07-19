@@ -51,7 +51,7 @@ module "atc" {
   version = "2.0.0"
 
   name_prefix          = "${var.name_prefix}-atc"
-  user_data            = data.template_file.atc.rendered
+  user_data            = local.user_data
   vpc_id               = var.vpc_id
   subnet_ids           = var.private_subnet_ids
   min_size             = var.min_size
@@ -77,12 +77,8 @@ locals {
   prometheus_bind_port = var.prometheus_enabled ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_PORT", var.prometheus_port) : ""
   start_node_exporter  = var.prometheus_enabled ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""
   concourse_web_host   = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
-}
 
-data "template_file" "atc" {
-  template = file("${path.module}/cloud-config.yml")
-
-  vars = {
+  user_data = templatefile("${path.module}/cloud-config.yml", {
     stack_name             = "${var.name_prefix}-atc-asg"
     region                 = data.aws_region.current.name
     target_group           = aws_lb_target_group.internal.arn
@@ -110,7 +106,7 @@ data "template_file" "atc" {
     authorized_worker_keys = file("${var.concourse_keys}/authorized_worker_keys")
     encryption_key         = var.encryption_key
     old_encryption_key     = var.old_encryption_key
-  }
+  })
 }
 
 resource "aws_cloudwatch_log_group" "atc" {
