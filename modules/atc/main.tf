@@ -30,7 +30,7 @@ resource "aws_security_group_rule" "workers_ingress_tsa" {
 resource "aws_security_group_rule" "tsa_ingress_peers" {
   security_group_id = module.atc.security_group_id
   type              = "ingress"
-  protocol          = -1
+  protocol          = "-1"
   from_port         = 0
   to_port           = 0
   self              = true
