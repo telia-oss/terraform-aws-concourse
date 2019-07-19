@@ -1,11 +1,9 @@
 # -------------------------------------------------------------------------------
 # Resources
 # -------------------------------------------------------------------------------
-data "aws_region" "current" {
-}
+data "aws_region" "current" {}
 
-data "aws_caller_identity" "current" {
-}
+data "aws_caller_identity" "current" {}
 
 data "aws_vpc" "concourse" {
   id = var.vpc_id
@@ -26,16 +24,16 @@ resource "aws_security_group_rule" "workers_ingress_tsa" {
   protocol          = "tcp"
   from_port         = var.tsa_port
   to_port           = var.tsa_port
-  cidr_blocks       = [data.aws_vpc.concourse.cidr_block]
+  cidr_blocks       = data.aws_vpc.concourse.cidr_block
 }
 
 resource "aws_security_group_rule" "tsa_ingress_peers" {
   security_group_id = module.atc.security_group_id
   type              = "ingress"
-  protocol          = "-1"
-  from_port         = "0"
-  to_port           = "0"
-  self              = "true"
+  protocol          = -1
+  from_port         = 0
+  to_port           = 0
+  self              = true
 }
 
 resource "aws_autoscaling_attachment" "external_lb" {
@@ -196,13 +194,13 @@ resource "aws_route53_record" "main" {
 
 module "external_lb" {
   source  = "telia-oss/loadbalancer/aws"
-  version = "0.2.0"
+  version = "2.0.0"
 
   name_prefix = "${var.name_prefix}-external"
   vpc_id      = var.vpc_id
   subnet_ids  = var.public_subnet_ids
   type        = "application"
-  internal    = "false"
+  internal    = false
   tags        = var.tags
 }
 
@@ -228,11 +226,11 @@ resource "aws_lb_target_group" "external" {
     protocol            = "HTTP"
     port                = "traffic-port"
     path                = "/"
-    interval            = "30"
-    timeout             = "5"
-    healthy_threshold   = "2"
-    unhealthy_threshold = "2"
-    matcher             = "200"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = 200
   }
 
   # NOTE: TF is unable to destroy a target group while a listener is attached,
@@ -252,13 +250,13 @@ resource "aws_lb_target_group" "external" {
 
 module "internal_lb" {
   source  = "telia-oss/loadbalancer/aws"
-  version = "0.2.0"
+  version = "2.0.0"
 
   name_prefix = "${var.name_prefix}-internal"
   vpc_id      = var.vpc_id
   subnet_ids  = var.private_subnet_ids
   type        = "network"
-  internal    = "true"
+  internal    = true
   tags        = var.tags
 }
 
@@ -282,9 +280,9 @@ resource "aws_lb_target_group" "internal" {
   health_check {
     protocol            = "TCP"
     port                = var.tsa_port
-    interval            = "30"
-    healthy_threshold   = "2"
-    unhealthy_threshold = "2"
+    interval            = 30
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
   }
 
   # NOTE: TF is unable to destroy a target group while a listener is attached,
