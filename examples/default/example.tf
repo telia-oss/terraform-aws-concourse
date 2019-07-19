@@ -75,7 +75,7 @@ module "concourse_worker" {
   name_prefix        = local.name_prefix
   concourse_keys     = "${path.root}/keys"
   vpc_id             = data.aws_vpc.main.id
-  private_subnet_ids = [data.aws_subnet_ids.main.ids]
+  private_subnet_ids = data.aws_subnet_ids.main.ids
   atc_sg             = module.concourse_atc.security_group_id
   tsa_host           = module.concourse_atc.tsa_host
   tsa_port           = module.concourse_atc.tsa_port

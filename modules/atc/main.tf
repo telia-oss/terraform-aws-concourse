@@ -24,7 +24,7 @@ resource "aws_security_group_rule" "workers_ingress_tsa" {
   protocol          = "tcp"
   from_port         = var.tsa_port
   to_port           = var.tsa_port
-  cidr_blocks       = data.aws_vpc.concourse.cidr_block
+  cidr_blocks       = [data.aws_vpc.concourse.cidr_block]
 }
 
 resource "aws_security_group_rule" "tsa_ingress_peers" {
@@ -50,20 +50,21 @@ module "atc" {
   source  = "telia-oss/asg/aws"
   version = "2.0.0"
 
-  name_prefix       = "${var.name_prefix}-atc"
-  user_data         = data.template_file.atc.rendered
-  vpc_id            = var.vpc_id
-  subnet_ids        = var.private_subnet_ids
-  min_size          = var.min_size
-  max_size          = var.max_size
-  instance_type     = var.instance_type
-  instance_ami      = var.instance_ami
-  instance_key      = var.instance_key
-  instance_policy   = data.aws_iam_policy_document.atc.json
-  await_signal      = true
-  pause_time        = "PT5M"
-  health_check_type = "ELB"
-  tags              = var.tags
+  name_prefix          = "${var.name_prefix}-atc"
+  user_data            = data.template_file.atc.rendered
+  vpc_id               = var.vpc_id
+  subnet_ids           = var.private_subnet_ids
+  min_size             = var.min_size
+  max_size             = var.max_size
+  instance_type        = var.instance_type
+  instance_ami         = var.instance_ami
+  instance_key         = var.instance_key
+  instance_policy      = data.aws_iam_policy_document.atc.json
+  instance_volume_size = 8
+  await_signal         = true
+  pause_time           = "PT5M"
+  health_check_type    = "ELB"
+  tags                 = var.tags
 }
 
 locals {
