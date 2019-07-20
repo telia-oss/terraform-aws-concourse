@@ -20,20 +20,6 @@ tasks:
     - task: fmt
     - task: validate
 
-  tidy:
-    desc: Tidy all the things.
-    silent: true
-    cmds:
-    - go mod tidy
-    - |
-      for f in $(echo "{{.FILES}}"); do 
-        sed -i '' -E "s/^([ ]*version[ ]*=[ ]*)\"([^\"]*)\"/\\1\"{{.PROVIDER_VERSION}}\"/g" $f
-        sed -i '' -E "s/^([ ]*required_version[ ]*=[ ]*)\"([^\"]*)\"/\\1\"{{.TERRAFORM_VERSION}}\"/g" $f
-      done
-    vars:
-      TERRAFORM_VERSION: '>= 0.12'
-      PROVIDER_VERSION:  '>= 2.17'
-
   ami:
     desc: Build the packer template to create a Concourse AMI.
     silent: true
@@ -46,6 +32,18 @@ tasks:
     cmds:
     - go test -v ./... -timeout=1h
     
+  tidy:
+    desc: Tidy all the things.
+    silent: true
+    cmds:
+    - go mod tidy
+    - |
+      for f in $(echo "{{.FILES}}"); do 
+        sed -i '' -E "s/^([ ]*required_version[ ]*=[ ]*)\"([^\"]*)\"/\\1\"{{.TERRAFORM_VERSION}}\"/g" $f
+      done
+    vars:
+      TERRAFORM_VERSION: '>= 0.12'
+
   fmt:
     desc: Check formatting of all terraform files.
     silent: true
