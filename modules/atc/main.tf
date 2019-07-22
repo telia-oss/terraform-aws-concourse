@@ -48,7 +48,7 @@ resource "aws_autoscaling_attachment" "internal_lb" {
 
 module "atc" {
   source  = "telia-oss/asg/aws"
-  version = "2.1.0"
+  version = "2.2.0"
 
   name_prefix          = "${var.name_prefix}-atc"
   user_data            = local.user_data
@@ -193,7 +193,7 @@ module "external_lb" {
   source  = "telia-oss/loadbalancer/aws"
   version = "2.0.0"
 
-  name_prefix = "${var.name_prefix}-external"
+  name_prefix = "${var.name_prefix}"
   vpc_id      = var.vpc_id
   subnet_ids  = var.public_subnet_ids
   type        = "application"
@@ -246,10 +246,11 @@ resource "aws_lb_target_group" "external" {
 }
 
 module "internal_lb" {
+
   source  = "telia-oss/loadbalancer/aws"
   version = "2.0.0"
 
-  name_prefix = "${var.name_prefix}-internal"
+  name_prefix = "${var.name_prefix}"
   vpc_id      = var.vpc_id
   subnet_ids  = var.private_subnet_ids
   type        = "network"
