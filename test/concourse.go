@@ -20,7 +20,7 @@ func RunTestSuite(t *testing.T, atcASGName, workerASGName string, region string,
 	_ = NewSession(t, region)
 
 	asg.RunTestSuite(t, atcASGName, region, expected.ATCAutoscaling)
-	asg.RunTestSuite(t, atcASGName, region, expected.WorkerAutoscaling)
+	asg.RunTestSuite(t, workerASGName, region, expected.WorkerAutoscaling)
 }
 
 func NewSession(t *testing.T, region string) *session.Session {
