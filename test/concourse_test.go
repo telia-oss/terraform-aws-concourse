@@ -3,12 +3,11 @@ package concourse_test
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"testing"
 
-	asg "github.com/telia-oss/terraform-aws-asg/test"
-	concourse "github.com/telia-oss/terraform-aws-concourse/test"
+	asg "github.com/telia-oss/terraform-aws-asg/v3/test"
+	concourse "github.com/telia-oss/terraform-aws-concourse/v3/test"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/packer"
@@ -41,7 +40,26 @@ func TestDefaultExample(t *testing.T) {
 						"terraform":   "True",
 						"environment": "dev",
 					},
-					UserData: readGoldenFile(t, "testdata/atc-cloud-config.golden.yml"),
+					UserData: []string{
+						`Environment="CONCOURSE_GITHUB_CLIENT_ID=sm:///concourse-deployment/github-oauth-client-id"`,
+						`Environment="CONCOURSE_GITHUB_CLIENT_SECRET=sm:///concourse-deployment/github-oauth-client-secret"`,
+						`Environment="CONCOURSE_MAIN_TEAM_GITHUB_USER=itsdalmo"`,
+						`Environment="CONCOURSE_MAIN_TEAM_GITHUB_TEAM=telia-oss:concourse-owners"`,
+						`Environment="CONCOURSE_ADD_LOCAL_USER=sm:///concourse-deployment/admin-user"`,
+						`Environment="CONCOURSE_MAIN_TEAM_LOCAL_USER=admin"`,
+						`Environment="CONCOURSE_POSTGRES_PORT=5439"`,
+						`Environment="CONCOURSE_POSTGRES_USER=superuser"`,
+						`Environment="CONCOURSE_POSTGRES_PASSWORD=dolphins"`,
+						`Environment="CONCOURSE_POSTGRES_DATABASE=main"`,
+						`Environment="CONCOURSE_LOG_LEVEL=info"`,
+						`Environment="CONCOURSE_TSA_LOG_LEVEL=info"`,
+						`Environment="CONCOURSE_TSA_HOST_KEY=/concourse/keys/web/tsa_host_key"`,
+						`Environment="CONCOURSE_TSA_AUTHORIZED_KEYS=/concourse/keys/web/authorized_worker_keys"`,
+						`Environment="CONCOURSE_SESSION_SIGNING_KEY=/concourse/keys/web/session_signing_key"`,
+						`Environment="CONCOURSE_ENCRYPTION_KEY="`,
+						`Environment="CONCOURSE_OLD_ENCRYPTION_KEY="`,
+						`Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=eu-west-1"`,
+					},
 				},
 				WorkerAutoscaling: asg.Expectations{
 					MinSize:         1,
@@ -52,7 +70,9 @@ func TestDefaultExample(t *testing.T) {
 						"terraform":   "True",
 						"environment": "dev",
 					},
-					UserData: readGoldenFile(t, "testdata/worker-cloud-config.golden.yml"),
+					UserData: []string{
+						"",
+					},
 				},
 			},
 		},
@@ -103,12 +123,4 @@ func TestDefaultExample(t *testing.T) {
 			)
 		})
 	}
-}
-
-func readGoldenFile(t *testing.T, path string) string {
-	f, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatalf("failed to read golden file: %s", path)
-	}
-	return string(f)
 }

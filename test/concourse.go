@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 
-	asg "github.com/telia-oss/terraform-aws-asg/test"
+	asg "github.com/telia-oss/terraform-aws-asg/v3/test"
 )
 
 // Expectations for the Concourse test suite
