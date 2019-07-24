@@ -31,6 +31,8 @@ func TestDefaultExample(t *testing.T) {
 			name:        fmt.Sprintf("concourse-basic-test-%s", random.UniqueId()),
 			region:      "eu-west-1",
 			expected: concourse.Expectations{
+				Version:       "5.1.0",
+				WorkerVersion: "2.1",
 				ATCAutoscaling: asg.Expectations{
 					MinSize:         1,
 					MaxSize:         2,
@@ -128,6 +130,7 @@ func TestDefaultExample(t *testing.T) {
 			terraform.InitAndApply(t, options)
 
 			concourse.RunTestSuite(t,
+				terraform.Output(t, options, "endpoint"),
 				terraform.Output(t, options, "atc_asg_id"),
 				terraform.Output(t, options, "worker_asg_id"),
 				tc.region,
