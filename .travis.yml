@@ -1,17 +1,20 @@
-dist: trusty
-sudo: true
+language: go
+sudo: false
+
+go:
+  - 1.12.x
 
 env:
-  - AWS_REGION=eu-west-1
+  - GO111MODULE=on AWS_REGION=eu-west-1
 
-before_install:
+notifications:
+  email: false
+
+before_script:
   - curl -fSL "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip" -o terraform.zip
   - sudo unzip terraform.zip -d /opt/terraform
   - sudo ln -s /opt/terraform/terraform /usr/bin/terraform
   - rm -f terraform.zip
 
-notifications:
-  email: false
-
 script:
-  - make
+  - go get -u -v github.com/go-task/task/v2/cmd/task && task test
