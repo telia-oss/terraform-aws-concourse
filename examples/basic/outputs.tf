@@ -1,5 +1,3 @@
-
-
 output "endpoint" {
   description = "The Concourse web interface."
   value       = module.concourse_atc.endpoint
