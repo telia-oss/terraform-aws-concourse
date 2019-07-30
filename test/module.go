@@ -1,4 +1,4 @@
-package concourse
+package module
 
 import (
 	"encoding/json"
@@ -12,7 +12,6 @@ import (
 	asg "github.com/telia-oss/terraform-aws-asg/v3/test"
 )
 
-// Expectations for the Concourse test suite
 type Expectations struct {
 	Version           string
 	WorkerVersion     string
@@ -20,7 +19,6 @@ type Expectations struct {
 	WorkerAutoscaling asg.Expectations
 }
 
-// RunTestSuite runs the test suite against the autoscaling group.
 func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName string, region string, expected Expectations) {
 	// Run test suites for the autoscaling groups.
 	asg.RunTestSuite(t, atcASGName, region, expected.ATCAutoscaling)

@@ -9,8 +9,8 @@ A Terraform module for deploying Concourse CI.
 1. Use [Packer](https://www.packer.io/) to create an AMI with Concourse (and related tooling installed) installed:
 
 ```bash
-# From the project root, using make:
-make ami
+# From the project root, using task:
+task ami
 ```
 
 2. Generate key pairs for Concourse:
