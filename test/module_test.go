@@ -1,4 +1,4 @@
-package concourse_test
+package module_test
 
 import (
 	"flag"
@@ -17,7 +17,7 @@ import (
 
 var amiID = flag.String("ami-id", "", "Concourse AMI ID.")
 
-func TestDefaultExample(t *testing.T) {
+func TestModule(t *testing.T) {
 	tests := []struct {
 		description string
 		directory   string
