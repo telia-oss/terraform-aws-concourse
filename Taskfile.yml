@@ -1,5 +1,9 @@
 version: '2'
 
+env:
+  AWS_DEFAULT_REGION: eu-west-1
+  GO111MODULE: on
+
 tasks:
   default:
     cmds:
@@ -11,7 +15,6 @@ tasks:
     env:
       DIRECTORIES:
         sh: find . -type f -name '*.tf' -not -path "**/.terraform/*" -exec dirname {} \; | sort -u
-      AWS_DEFAULT_REGION: eu-west-1
     cmds:
     - |
       BOLD=$(tput bold)
