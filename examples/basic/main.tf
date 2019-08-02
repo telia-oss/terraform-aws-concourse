@@ -17,7 +17,7 @@ data "aws_subnet_ids" "main" {
 
 module "postgres" {
   source  = "telia-oss/rds-cluster/aws"
-  version = "2.0.0"
+  version = "3.0.0"
 
   name_prefix = var.name_prefix
   username    = "superuser"
