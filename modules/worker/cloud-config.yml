@@ -103,6 +103,19 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+  - path: "/etc/logrotate.d/concourse"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      /var/log/concourse.log {
+          create 0644 root root
+          daily
+          rotate 1
+          size 100M
+          postrotate
+              systemctl restart concourse-logging awslogsd
+          endscript
+      }
   - path: "/etc/systemd/system/lifecycled.service"
     permissions: "0644"
     owner: "root"
