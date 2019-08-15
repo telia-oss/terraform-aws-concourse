@@ -61,7 +61,7 @@ data "template_cloudinit_config" "worker" {
   part {
     content_type = "text/cloud-config"
 
-    content = templatefile("${path.module}/../cloud-config/shared.yml", {
+    content = templatefile("${path.module}/../cloud-init/shared.yml", {
       region             = data.aws_region.current.name
       log_group_name     = aws_cloudwatch_log_group.worker.name
       prometheus_enabled = var.prometheus_enabled
@@ -72,7 +72,7 @@ data "template_cloudinit_config" "worker" {
     content_type = "text/cloud-config"
     merge_type   = "list(append)+dict(recurse_array)+str()"
 
-    content = templatefile("${path.module}/../cloud-config/worker.yml", {
+    content = templatefile("${path.module}/../cloud-init/worker.yml", {
       region                    = data.aws_region.current.name
       stack_name                = "${var.name_prefix}-worker-asg"
       tsa_host                  = var.tsa_host
