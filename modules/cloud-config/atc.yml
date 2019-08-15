@@ -49,7 +49,7 @@ write_files:
       Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=${region}"
 
       %{ if local_user != "" }Environment="CONCOURSE_ADD_LOCAL_USER=${local_user}"%{ endif }
-      %{ if local_admin_user != "" }Environemnt="CONCOURSE_MAIN_TEAM_LOCAL_USER=${local_admin_user}"%{ endif }
+      %{ if local_admin_user != "" }Environment="CONCOURSE_MAIN_TEAM_LOCAL_USER=${local_admin_user}"%{ endif }
       %{ if length(github_users) > 0 }Environment="CONCOURSE_MAIN_TEAM_GITHUB_USER=${join(",", github_users)}"%{ endif }
       %{ if length(github_teams) > 0 }Environment="CONCOURSE_MAIN_TEAM_GITHUB_TEAM=${join(",", github_teams)}"%{ endif }
       %{ if prometheus_enabled }Environment="CONCOURSE_PROMETHEUS_BIND_IP=0.0.0.0"%{ endif }

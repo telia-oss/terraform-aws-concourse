@@ -68,7 +68,7 @@ module "atc" {
 }
 
 data "template_cloudinit_config" "atc" {
-  gzip          = true
+  gzip          = false
   base64_encode = true
 
   part {
