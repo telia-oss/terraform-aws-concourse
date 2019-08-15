@@ -1,0 +1,76 @@
+#cloud-config
+write_files:
+  - path: "/etc/awslogs/awscli.template"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [plugins]
+      cwlogs = cwlogs
+      [default]
+      region = ${region}
+  - path: "/etc/awslogs/awslogs.template"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [general]
+      state_file = /var/lib/awslogs/agent-state
+
+      [/var/log/concourse.log]
+      file = /var/log/concourse.log
+      log_group_name = ${log_group_name}
+      log_stream_name = {instance_id}
+  - path: "/etc/systemd/system/node_exporter.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Node exporter for Prometheus to scrape
+      Requires=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      Restart=always
+      ExecStart=/usr/local/bin/node_exporter
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/systemd/system/concourse-logging.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Service for Concourse logging
+      After=rc-local.service
+
+      [Service]
+      Type=simple
+      Restart=always
+      TimeoutSec=infinity
+
+      ExecStart=/bin/bash -c '/usr/bin/journalctl -u concourse --no-tail -f -o cat > /var/log/concourse.log'
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/etc/logrotate.d/concourse"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      /var/log/concourse.log {
+          create 0644 root root
+          daily
+          rotate 1
+          size 100M
+          postrotate
+              systemctl restart concourse-logging awslogsd
+          endscript
+      }
+runcmd:
+  - |
+    cp /etc/awslogs/awscli.template /etc/awslogs/awscli.conf
+    cp /etc/awslogs/awslogs.template /etc/awslogs/awslogs.conf
+  - |
+    systemctl enable concourse-logging.service --now
+    systemctl enable awslogsd.service --now
+    systemctl enable concourse.service --now
+    %{if prometheus_enabled } systemctl enable node_exporter.service --now %{ endif }
