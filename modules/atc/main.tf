@@ -51,7 +51,7 @@ module "atc" {
   version = "3.1.0"
 
   name_prefix          = "${var.name_prefix}-atc"
-  user_data            = local.user_data
+  user_data            = data.template_cloudinit_config.atc.rendered
   vpc_id               = var.vpc_id
   subnet_ids           = var.private_subnet_ids
   min_size             = var.min_size
@@ -67,46 +67,52 @@ module "atc" {
   tags                 = var.tags
 }
 
-locals {
-  template             = "Environment=\"%s=%s\""
-  local_user           = var.local_user != "" ? format(local.template, "CONCOURSE_ADD_LOCAL_USER", var.local_user) : ""
-  local_admin_user     = var.local_admin_user != "" ? format(local.template, "CONCOURSE_MAIN_TEAM_LOCAL_USER", var.local_admin_user) : ""
-  github_users         = length(var.github_users) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_USER", join(",", var.github_users)) : ""
-  github_teams         = length(var.github_teams) > 0 ? format(local.template, "CONCOURSE_MAIN_TEAM_GITHUB_TEAM", join(",", var.github_teams)) : ""
-  prometheus_bind_ip   = var.prometheus_enabled ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_IP", "0.0.0.0") : ""
-  prometheus_bind_port = var.prometheus_enabled ? format(local.template, "CONCOURSE_PROMETHEUS_BIND_PORT", var.prometheus_port) : ""
-  start_node_exporter  = var.prometheus_enabled ? "systemctl enable node_exporter.service --now" : "echo \"Prometheus disabled, not starting node-exporter\""
-  concourse_web_host   = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
+data "template_cloudinit_config" "atc" {
+  gzip          = true
+  base64_encode = true
 
-  user_data = templatefile("${path.module}/cloud-config.yml", {
-    stack_name             = "${var.name_prefix}-atc-asg"
-    region                 = data.aws_region.current.name
-    target_group           = aws_lb_target_group.internal.arn
-    atc_port               = var.atc_port
-    tsa_port               = var.tsa_port
-    local_user             = local.local_user
-    local_admin_user       = local.local_admin_user
-    github_client_id       = var.github_client_id
-    github_client_secret   = var.github_client_secret
-    github_users           = local.github_users
-    github_teams           = local.github_teams
-    prometheus_bind_ip     = local.prometheus_bind_ip
-    prometheus_bind_port   = local.prometheus_bind_port
-    start_node_exporter    = local.start_node_exporter
-    concourse_web_host     = local.concourse_web_host
-    postgres_host          = var.postgres_host
-    postgres_port          = var.postgres_port
-    postgres_username      = var.postgres_username
-    postgres_password      = var.postgres_password
-    postgres_database      = var.postgres_database
-    log_group_name         = aws_cloudwatch_log_group.atc.name
-    log_level              = var.log_level
-    tsa_host_key           = file("${var.concourse_keys}/tsa_host_key")
-    session_signing_key    = file("${var.concourse_keys}/session_signing_key")
-    authorized_worker_keys = file("${var.concourse_keys}/authorized_worker_keys")
-    encryption_key         = var.encryption_key
-    old_encryption_key     = var.old_encryption_key
-  })
+  part {
+    content_type = "text/cloud-config"
+
+    content = templatefile("${path.module}/../cloud-config/shared.yml", {
+      region             = data.aws_region.current.name
+      log_group_name     = aws_cloudwatch_log_group.atc.name
+      prometheus_enabled = var.prometheus_enabled
+    })
+  }
+
+  part {
+    content_type = "text/cloud-config"
+    merge_type   = "list(append)+dict(recurse_array)+str()"
+
+    content = templatefile("${path.module}/../cloud-config/atc.yml", {
+      region                 = data.aws_region.current.name
+      stack_name             = "${var.name_prefix}-atc-asg"
+      target_group           = aws_lb_target_group.internal.arn
+      atc_port               = var.atc_port
+      tsa_port               = var.tsa_port
+      local_user             = var.local_user
+      local_admin_user       = var.local_admin_user
+      github_client_id       = var.github_client_id
+      github_client_secret   = var.github_client_secret
+      github_users           = var.github_users
+      github_teams           = var.github_teams
+      prometheus_enabled     = var.prometheus_enabled
+      prometheus_bind_port   = var.prometheus_port
+      concourse_web_host     = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
+      postgres_host          = var.postgres_host
+      postgres_port          = var.postgres_port
+      postgres_username      = var.postgres_username
+      postgres_password      = var.postgres_password
+      postgres_database      = var.postgres_database
+      log_level              = var.log_level
+      tsa_host_key           = file("${var.concourse_keys}/tsa_host_key")
+      session_signing_key    = file("${var.concourse_keys}/session_signing_key")
+      authorized_worker_keys = file("${var.concourse_keys}/authorized_worker_keys")
+      encryption_key         = var.encryption_key
+      old_encryption_key     = var.old_encryption_key
+    })
+  }
 }
 
 resource "aws_cloudwatch_log_group" "atc" {

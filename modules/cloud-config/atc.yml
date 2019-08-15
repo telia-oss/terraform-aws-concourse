@@ -15,25 +15,6 @@ write_files:
     owner: "root"
     encoding: base64
     content: ${base64encode(authorized_worker_keys)}
-  - path: "/etc/awslogs/awscli.template"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      [plugins]
-      cwlogs = cwlogs
-      [default]
-      region = ${region}
-  - path: "/etc/awslogs/awslogs.template"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      [general]
-      state_file = /var/lib/awslogs/agent-state
-
-      [/var/log/concourse.log]
-      file = /var/log/concourse.log
-      log_group_name = ${log_group_name}
-      log_stream_name = {instance_id}
   - path: "/etc/systemd/system/concourse.service"
     permissions: "0644"
     owner: "root"
@@ -52,17 +33,11 @@ write_files:
 
       Environment="CONCOURSE_GITHUB_CLIENT_ID=${github_client_id}"
       Environment="CONCOURSE_GITHUB_CLIENT_SECRET=${github_client_secret}"
-      ${github_users}
-      ${github_teams}
-      ${local_user}
-      ${local_admin_user}
-
       Environment="CONCOURSE_POSTGRES_HOST=${postgres_host}"
       Environment="CONCOURSE_POSTGRES_PORT=${postgres_port}"
       Environment="CONCOURSE_POSTGRES_USER=${postgres_username}"
       Environment="CONCOURSE_POSTGRES_PASSWORD=${postgres_password}"
       Environment="CONCOURSE_POSTGRES_DATABASE=${postgres_database}"
-
       Environment="CONCOURSE_EXTERNAL_URL=${concourse_web_host}"
       Environment="CONCOURSE_LOG_LEVEL=${log_level}"
       Environment="CONCOURSE_TSA_LOG_LEVEL=${log_level}"
@@ -73,60 +48,18 @@ write_files:
       Environment="CONCOURSE_OLD_ENCRYPTION_KEY=${old_encryption_key}"
       Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=${region}"
 
-      ${prometheus_bind_ip}
-      ${prometheus_bind_port}
+      %{ if local_user != "" }Environment="CONCOURSE_ADD_LOCAL_USER=${local_user}"%{ endif }
+      %{ if local_admin_user != "" }Environemnt="CONCOURSE_MAIN_TEAM_LOCAL_USER=${local_admin_user}"%{ endif }
+      %{ if length(github_users) > 0 }Environment="CONCOURSE_MAIN_TEAM_GITHUB_USER=${join(",", github_users)}"%{ endif }
+      %{ if length(github_teams) > 0 }Environment="CONCOURSE_MAIN_TEAM_GITHUB_TEAM=${join(",", github_teams)}"%{ endif }
+      %{ if prometheus_enabled }Environment="CONCOURSE_PROMETHEUS_BIND_IP=0.0.0.0"%{ endif }
+      %{ if prometheus_enabled }Environment="CONCOURSE_PROMETHEUS_BIND_PORT=${prometheus_bind_port}"%{ endif }
 
       ExecStartPre=/bin/bash -c "/bin/systemctl set-environment CONCOURSE_PEER_ADDRESS=$(curl -L http://169.254.169.254/latest/meta-data/local-ipv4)"
       ExecStart=/usr/local/bin/aws-env exec -- /usr/local/concourse/bin/concourse web
 
       [Install]
       WantedBy=multi-user.target
-  - path: "/etc/systemd/system/node_exporter.service"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      [Unit]
-      Description=Node exporter for Prometheus to scrape
-      Requires=network-online.target
-      After=network-online.target
-
-      [Service]
-      Type=simple
-      Restart=always
-      ExecStart=/usr/local/bin/node_exporter
-
-      [Install]
-      WantedBy=multi-user.target
-  - path: "/etc/systemd/system/concourse-logging.service"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      [Unit]
-      Description=Service for Concourse logging
-      After=rc-local.service
-
-      [Service]
-      Type=simple
-      Restart=always
-      TimeoutSec=infinity
-
-      ExecStart=/bin/bash -c '/usr/bin/journalctl -u concourse --no-tail -f -o cat > /var/log/concourse.log'
-
-      [Install]
-      WantedBy=multi-user.target
-  - path: "/etc/logrotate.d/concourse"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      /var/log/concourse.log {
-          create 0644 root root
-          daily
-          rotate 1
-          size 100M
-          postrotate
-              systemctl restart concourse-logging awslogsd
-          endscript
-      }
   - path: "/usr/local/scripts/cloudformation-signal.sh"
     permissions: "0744"
     owner: "root"
@@ -147,14 +80,6 @@ write_files:
           echo "State is $${state}"
       done
 runcmd:
-  - |
-    cp /etc/awslogs/awscli.template /etc/awslogs/awscli.conf
-    cp /etc/awslogs/awslogs.template /etc/awslogs/awslogs.conf
-  - |
-    systemctl enable concourse-logging.service --now
-    systemctl enable awslogsd.service --now
-    systemctl enable concourse.service --now
-    ${start_node_exporter}
   - |
     /usr/local/scripts/cloudformation-signal.sh
     /opt/aws/bin/cfn-signal -e $? --stack ${stack_name} --resource AutoScalingGroup --region ${region}
