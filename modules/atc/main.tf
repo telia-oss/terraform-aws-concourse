@@ -283,14 +283,11 @@ resource "aws_lb_target_group" "internal" {
   # Since the TSA attempts to handshake TCP health checks which generates INFO log entries 
   # with "error: EOF" we are instead health checking the ATC which is part of the same binary.
   health_check {
-    protocol            = "HTTP"
+    protocol            = "TCP"
     port                = var.atc_port
-    path                = "/"
     interval            = 30
-    timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    matcher             = 200
   }
 
   # NOTE: TF is unable to destroy a target group while a listener is attached,
