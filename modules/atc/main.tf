@@ -280,10 +280,11 @@ resource "aws_lb_target_group" "internal" {
   port     = var.tsa_port
   protocol = "TCP"
 
-  # NOTE: This generates INFO log entries (error: EOF) since TSA will attempt to handshake the healthchecks.
+  # Since the TSA attempts to handshake TCP health checks which generates INFO log entries 
+  # with "error: EOF" we are instead health checking the ATC which is part of the same binary.
   health_check {
     protocol            = "TCP"
-    port                = var.tsa_port
+    port                = var.atc_port
     interval            = 30
     healthy_threshold   = 2
     unhealthy_threshold = 2
