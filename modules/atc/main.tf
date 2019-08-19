@@ -48,10 +48,10 @@ resource "aws_autoscaling_attachment" "internal_lb" {
 
 module "atc" {
   source  = "telia-oss/asg/aws"
-  version = "3.1.0"
+  version = "3.2.0"
 
   name_prefix          = "${var.name_prefix}-atc"
-  user_data            = data.template_cloudinit_config.atc.rendered
+  user_data_base64     = data.template_cloudinit_config.atc.rendered
   vpc_id               = var.vpc_id
   subnet_ids           = var.private_subnet_ids
   min_size             = var.min_size
