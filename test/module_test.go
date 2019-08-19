@@ -62,6 +62,7 @@ func TestModule(t *testing.T) {
 						`Environment="CONCOURSE_OLD_ENCRYPTION_KEY="`,
 						`Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=eu-west-1"`,
 					},
+					IsGzippedUserData: true,
 				},
 				WorkerAutoscaling: asg.Expectations{
 					MinSize:         1,
@@ -87,6 +88,7 @@ func TestModule(t *testing.T) {
 						`ExecStop=/usr/local/concourse/bin/concourse retire-worker`,
 						`ExecStop=/bin/bash -c "while pgrep concourse >> /dev/null; do echo draining worker... && sleep 5; done; echo done draining!"`,
 					},
+					IsGzippedUserData: true,
 				},
 			},
 		},

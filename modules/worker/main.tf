@@ -34,10 +34,10 @@ resource "aws_security_group_rule" "atc_ingress_garden" {
 
 module "worker" {
   source  = "telia-oss/asg/aws"
-  version = "3.1.0"
+  version = "3.2.0"
 
   name_prefix          = "${var.name_prefix}-worker"
-  user_data            = data.template_cloudinit_config.worker.rendered
+  user_data_base64     = data.template_cloudinit_config.worker.rendered
   vpc_id               = var.vpc_id
   subnet_ids           = var.private_subnet_ids
   min_size             = var.min_size
@@ -54,37 +54,41 @@ module "worker" {
 
 }
 
+locals {
+  shared_cloud_init = templatefile("${path.module}/../cloud-init/shared.yml", {
+    region             = data.aws_region.current.name
+    log_group_name     = aws_cloudwatch_log_group.worker.name
+    prometheus_enabled = var.prometheus_enabled
+  })
+
+  worker_cloud_init = templatefile("${path.module}/../cloud-init/worker.yml", {
+    region                    = data.aws_region.current.name
+    stack_name                = "${var.name_prefix}-worker-asg"
+    tsa_host                  = var.tsa_host
+    tsa_port                  = var.tsa_port
+    log_level                 = var.log_level
+    worker_team               = var.worker_team
+    worker_key                = file("${var.concourse_keys}/worker_key")
+    pub_worker_key            = file("${var.concourse_keys}/worker_key.pub")
+    pub_tsa_host_key          = file("${var.concourse_keys}/tsa_host_key.pub")
+    lifecycle_topic           = aws_sns_topic.worker.arn
+    lifecycled_log_group_name = aws_cloudwatch_log_group.worker_lifecycled.name
+  })
+}
+
 data "template_cloudinit_config" "worker" {
-  gzip          = false
+  gzip          = true
   base64_encode = true
 
   part {
     content_type = "text/cloud-config"
-
-    content = templatefile("${path.module}/../cloud-init/shared.yml", {
-      region             = data.aws_region.current.name
-      log_group_name     = aws_cloudwatch_log_group.worker.name
-      prometheus_enabled = var.prometheus_enabled
-    })
+    content      = local.shared_cloud_init
   }
 
   part {
     content_type = "text/cloud-config"
     merge_type   = "list(append)+dict(recurse_array)+str()"
-
-    content = templatefile("${path.module}/../cloud-init/worker.yml", {
-      region                    = data.aws_region.current.name
-      stack_name                = "${var.name_prefix}-worker-asg"
-      tsa_host                  = var.tsa_host
-      tsa_port                  = var.tsa_port
-      log_level                 = var.log_level
-      worker_team               = var.worker_team
-      worker_key                = file("${var.concourse_keys}/worker_key")
-      pub_worker_key            = file("${var.concourse_keys}/worker_key.pub")
-      pub_tsa_host_key          = file("${var.concourse_keys}/tsa_host_key.pub")
-      lifecycle_topic           = aws_sns_topic.worker.arn
-      lifecycled_log_group_name = aws_cloudwatch_log_group.worker_lifecycled.name
-    })
+    content      = local.worker_cloud_init
   }
 }
 

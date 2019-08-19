@@ -48,10 +48,10 @@ resource "aws_autoscaling_attachment" "internal_lb" {
 
 module "atc" {
   source  = "telia-oss/asg/aws"
-  version = "3.1.0"
+  version = "3.2.0"
 
   name_prefix          = "${var.name_prefix}-atc"
-  user_data            = data.template_cloudinit_config.atc.rendered
+  user_data_base64     = data.template_cloudinit_config.atc.rendered
   vpc_id               = var.vpc_id
   subnet_ids           = var.private_subnet_ids
   min_size             = var.min_size
@@ -67,51 +67,55 @@ module "atc" {
   tags                 = var.tags
 }
 
+locals {
+  shared_cloud_init = templatefile("${path.module}/../cloud-init/shared.yml", {
+    region             = data.aws_region.current.name
+    log_group_name     = aws_cloudwatch_log_group.atc.name
+    prometheus_enabled = var.prometheus_enabled
+  })
+
+  atc_cloud_init = templatefile("${path.module}/../cloud-init/atc.yml", {
+    region                 = data.aws_region.current.name
+    stack_name             = "${var.name_prefix}-atc-asg"
+    target_group           = aws_lb_target_group.internal.arn
+    atc_port               = var.atc_port
+    tsa_port               = var.tsa_port
+    local_user             = var.local_user
+    local_admin_user       = var.local_admin_user
+    github_client_id       = var.github_client_id
+    github_client_secret   = var.github_client_secret
+    github_users           = var.github_users
+    github_teams           = var.github_teams
+    prometheus_enabled     = var.prometheus_enabled
+    prometheus_bind_port   = var.prometheus_port
+    concourse_web_host     = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
+    postgres_host          = var.postgres_host
+    postgres_port          = var.postgres_port
+    postgres_username      = var.postgres_username
+    postgres_password      = var.postgres_password
+    postgres_database      = var.postgres_database
+    log_level              = var.log_level
+    tsa_host_key           = file("${var.concourse_keys}/tsa_host_key")
+    session_signing_key    = file("${var.concourse_keys}/session_signing_key")
+    authorized_worker_keys = file("${var.concourse_keys}/authorized_worker_keys")
+    encryption_key         = var.encryption_key
+    old_encryption_key     = var.old_encryption_key
+  })
+}
+
 data "template_cloudinit_config" "atc" {
-  gzip          = false
+  gzip          = true
   base64_encode = true
 
   part {
     content_type = "text/cloud-config"
-
-    content = templatefile("${path.module}/../cloud-init/shared.yml", {
-      region             = data.aws_region.current.name
-      log_group_name     = aws_cloudwatch_log_group.atc.name
-      prometheus_enabled = var.prometheus_enabled
-    })
+    content      = local.shared_cloud_init
   }
 
   part {
     content_type = "text/cloud-config"
     merge_type   = "list(append)+dict(recurse_array)+str()"
-
-    content = templatefile("${path.module}/../cloud-init/atc.yml", {
-      region                 = data.aws_region.current.name
-      stack_name             = "${var.name_prefix}-atc-asg"
-      target_group           = aws_lb_target_group.internal.arn
-      atc_port               = var.atc_port
-      tsa_port               = var.tsa_port
-      local_user             = var.local_user
-      local_admin_user       = var.local_admin_user
-      github_client_id       = var.github_client_id
-      github_client_secret   = var.github_client_secret
-      github_users           = var.github_users
-      github_teams           = var.github_teams
-      prometheus_enabled     = var.prometheus_enabled
-      prometheus_bind_port   = var.prometheus_port
-      concourse_web_host     = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
-      postgres_host          = var.postgres_host
-      postgres_port          = var.postgres_port
-      postgres_username      = var.postgres_username
-      postgres_password      = var.postgres_password
-      postgres_database      = var.postgres_database
-      log_level              = var.log_level
-      tsa_host_key           = file("${var.concourse_keys}/tsa_host_key")
-      session_signing_key    = file("${var.concourse_keys}/session_signing_key")
-      authorized_worker_keys = file("${var.concourse_keys}/authorized_worker_keys")
-      encryption_key         = var.encryption_key
-      old_encryption_key     = var.old_encryption_key
-    })
+    content      = local.atc_cloud_init
   }
 }
 
@@ -252,7 +256,6 @@ resource "aws_lb_target_group" "external" {
 }
 
 module "internal_lb" {
-
   source  = "telia-oss/loadbalancer/aws"
   version = "3.0.0"
 
