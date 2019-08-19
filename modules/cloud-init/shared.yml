@@ -48,7 +48,7 @@ write_files:
       Restart=always
       TimeoutSec=infinity
 
-      ExecStart=/bin/bash -c '/usr/bin/journalctl -u concourse --no-tail -f -o cat > /var/log/concourse.log'
+      ExecStart=/bin/bash -c '/usr/bin/journalctl -u concourse -f -o cat > /var/log/concourse.log'
 
       [Install]
       WantedBy=multi-user.target
