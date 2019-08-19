@@ -55,7 +55,7 @@ module "worker" {
 }
 
 data "template_cloudinit_config" "worker" {
-  gzip          = false
+  gzip          = true
   base64_encode = true
 
   part {
