@@ -26,16 +26,16 @@ type Expectations struct {
 	WorkerAutoscaling asg.Expectations
 }
 
-func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName string, adminUser, adminPassword, region string, expected Expectations) {
+func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName, adminUser, adminPassword, region string, expected Expectations) {
 	// Run test suites for the autoscaling groups.
 	asg.RunTestSuite(t, atcASGName, region, expected.ATCAutoscaling)
 	asg.RunTestSuite(t, workerASGName, region, expected.WorkerAutoscaling)
 
-	// Run tests against concourse.
 	info := GetConcourseInfo(t, endpoint)
 	assert.Equal(t, expected.Version, info.Version)
 	assert.Equal(t, expected.WorkerVersion, info.WorkerVersion)
 
+	// Download and install fly binary.
 	tempDir, err := ioutil.TempDir("", "terraform-aws-concourse")
 	if err != nil {
 		t.Fatalf("failed to create temporary directory for fly binary: %s", err)
@@ -48,8 +48,7 @@ func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName string, admi
 		Target:    "terraform-aws-concourse",
 	}
 
-	fly.Install(t)
-	fly.Login(t, adminUser, adminPassword)
+	fly.Setup(t, adminUser, adminPassword)
 
 	workers := fly.Workers(t)
 	assert.Equal(t, int(expected.WorkerAutoscaling.MinSize), len(workers))
@@ -65,11 +64,6 @@ func parseURL(t *testing.T, endpoint string) *url.URL {
 		t.Fatalf("failed to parse url from endpoint: %s", endpoint)
 	}
 	return u
-}
-
-type concourseInfo struct {
-	Version       string `json:"version"`
-	WorkerVersion string `json:"worker_version"`
 }
 
 func GetConcourseInfo(t *testing.T, endpoint string) concourseInfo {
@@ -94,6 +88,11 @@ func GetConcourseInfo(t *testing.T, endpoint string) concourseInfo {
 	return info
 }
 
+type concourseInfo struct {
+	Version       string `json:"version"`
+	WorkerVersion string `json:"worker_version"`
+}
+
 type Fly struct {
 	Endpoint  string
 	Directory string
@@ -101,7 +100,7 @@ type Fly struct {
 	bin       string
 }
 
-func (f *Fly) Install(t *testing.T) {
+func (f *Fly) Setup(t *testing.T, username, password string) {
 	u := parseURL(t, f.Endpoint)
 	q := u.Query()
 
@@ -135,20 +134,12 @@ func (f *Fly) Install(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to change fly permissions: %s", err)
 	}
-}
 
-func (f *Fly) Login(t *testing.T, username, password string) {
 	cmd := exec.Command(f.bin, "--target", f.Target, "login", "--team-name", "main", "--concourse-url", f.Endpoint, "--username", username, "--password", password)
-	out, err := cmd.CombinedOutput()
+	_, err = cmd.CombinedOutput()
 	if err != nil {
 		t.Errorf("failed to login to concourse: %s", err)
 	}
-	t.Log(string(out))
-}
-
-type concourseWorker struct {
-	Platform string `json:"platform"`
-	State    string `json:"state"`
 }
 
 func (f *Fly) Workers(t *testing.T) []*concourseWorker {
@@ -157,7 +148,6 @@ func (f *Fly) Workers(t *testing.T) []*concourseWorker {
 	if err != nil {
 		t.Errorf("failed to list workers: %s", err)
 	}
-	t.Log(string(out))
 
 	r := bytes.NewReader(out)
 
@@ -167,4 +157,9 @@ func (f *Fly) Workers(t *testing.T) []*concourseWorker {
 		t.Fatalf("failed to deserialize workers: %s", err)
 	}
 	return workers
+}
+
+type concourseWorker struct {
+	Platform string `json:"platform"`
+	State    string `json:"state"`
 }
