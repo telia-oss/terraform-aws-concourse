@@ -148,8 +148,6 @@ func (f *Fly) Setup(t *testing.T, username, password string) {
 	}
 	defer file.Close()
 
-	t.Logf("downloaded fly to '%s'", f.bin)
-
 	resp, err := http.Get(u.String())
 	if err != nil {
 		t.Fatalf("failed to get fly: %s", err)
