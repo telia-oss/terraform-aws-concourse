@@ -55,7 +55,7 @@ module "concourse_atc" {
   github_client_secret = "sm:///concourse-deployment/github-oauth-client-secret"
   github_users         = ["itsdalmo"]
   github_teams         = ["telia-oss:concourse-owners"]
-  local_user           = "sm:///concourse-deployment/admin-user"
+  local_user           = "admin:${var.concourse_admin_password}"
   local_admin_user     = "admin"
 
   tags = {

@@ -18,6 +18,15 @@ resource "aws_security_group_rule" "lb_ingress_atc" {
   source_security_group_id = module.external_lb.security_group_id
 }
 
+resource "aws_security_group_rule" "workers_ingress_atc" {
+  security_group_id = module.atc.security_group_id
+  type              = "ingress"
+  protocol          = "tcp"
+  from_port         = var.atc_port
+  to_port           = var.atc_port
+  cidr_blocks       = [data.aws_vpc.concourse.cidr_block]
+}
+
 resource "aws_security_group_rule" "workers_ingress_tsa" {
   security_group_id = module.atc.security_group_id
   type              = "ingress"
