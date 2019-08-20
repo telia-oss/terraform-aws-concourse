@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -34,15 +35,13 @@ func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName, adminUser, 
 	asg.RunTestSuite(t, atcASGName, region, expected.ATCAutoscaling)
 	asg.RunTestSuite(t, workerASGName, region, expected.WorkerAutoscaling)
 
+	// Wait for ATC to register as healthy in the target groups (max 10min wait)
+	sess := NewSession(t, region)
+	WaitForHealthyTargets(t, sess, atcASGName, 10*time.Second, 10*time.Minute)
+
 	info := GetConcourseInfo(t, endpoint)
 	assert.Equal(t, expected.Version, info.Version)
 	assert.Equal(t, expected.WorkerVersion, info.WorkerVersion)
-
-	sess := NewSession(t, region)
-	targetGroups := DescribeTargetGroups(t, sess, atcASGName)
-	for _, group := range targetGroups {
-		assert.Equal(t, "InService", aws.StringValue(group.State))
-	}
 
 	// Download and install fly binary.
 	tempDir, err := ioutil.TempDir("", "terraform-aws-concourse")
@@ -122,6 +121,31 @@ func DescribeTargetGroups(t *testing.T, sess *session.Session, asgName string) [
 		t.Fatalf("failed to describe load balancer target groups: %s", err)
 	}
 	return out.LoadBalancerTargetGroups
+}
+
+func WaitForHealthyTargets(t *testing.T, sess *session.Session, asgName string, checkInterval time.Duration, timeoutLimit time.Duration) {
+	interval := time.NewTicker(checkInterval)
+	defer interval.Stop()
+
+	timeout := time.NewTimer(timeoutLimit)
+	defer timeout.Stop()
+
+WaitLoop:
+	for {
+		select {
+		case <-interval.C:
+			targetGroups := DescribeTargetGroups(t, sess, asgName)
+			for _, group := range targetGroups {
+				if aws.StringValue(group.State) != "InService" {
+					t.Logf("target group health not healthy: %s", aws.StringValue(group.LoadBalancerTargetGroupARN))
+					continue WaitLoop
+				}
+			}
+			break WaitLoop
+		case <-timeout.C:
+			t.Fatal("timeout reached while waiting for target group health checks")
+		}
+	}
 }
 
 type Fly struct {
