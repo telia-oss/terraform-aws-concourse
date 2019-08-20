@@ -14,6 +14,9 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/stretchr/testify/assert"
 
 	asg "github.com/telia-oss/terraform-aws-asg/v3/test"
@@ -34,6 +37,12 @@ func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName, adminUser, 
 	info := GetConcourseInfo(t, endpoint)
 	assert.Equal(t, expected.Version, info.Version)
 	assert.Equal(t, expected.WorkerVersion, info.WorkerVersion)
+
+	sess := NewSession(t, region)
+	targetGroups := DescribeTargetGroups(t, sess, atcASGName)
+	for _, group := range targetGroups {
+		assert.Equal(t, "InService", aws.StringValue(group.State))
+	}
 
 	// Download and install fly binary.
 	tempDir, err := ioutil.TempDir("", "terraform-aws-concourse")
@@ -66,7 +75,7 @@ func parseURL(t *testing.T, endpoint string) *url.URL {
 	return u
 }
 
-func GetConcourseInfo(t *testing.T, endpoint string) concourseInfo {
+func GetConcourseInfo(t *testing.T, endpoint string) ConcourseInfo {
 	u := parseURL(t, endpoint)
 	u.Path = path.Join(u.Path, "api", "v1", "info")
 
@@ -80,7 +89,7 @@ func GetConcourseInfo(t *testing.T, endpoint string) concourseInfo {
 		t.Errorf("got non-200 response: %d", r.StatusCode)
 	}
 
-	var info concourseInfo
+	var info ConcourseInfo
 	err = json.NewDecoder(r.Body).Decode(&info)
 	if err != nil {
 		t.Fatalf("failed to deserialize JSON response: %s", err)
@@ -88,9 +97,31 @@ func GetConcourseInfo(t *testing.T, endpoint string) concourseInfo {
 	return info
 }
 
-type concourseInfo struct {
+type ConcourseInfo struct {
 	Version       string `json:"version"`
 	WorkerVersion string `json:"worker_version"`
+}
+
+func NewSession(t *testing.T, region string) *session.Session {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region),
+	})
+	if err != nil {
+		t.Fatalf("failed to create new AWS session: %s", err)
+	}
+	return sess
+}
+
+func DescribeTargetGroups(t *testing.T, sess *session.Session, asgName string) []*autoscaling.LoadBalancerTargetGroupState {
+	c := autoscaling.New(sess)
+
+	out, err := c.DescribeLoadBalancerTargetGroups(&autoscaling.DescribeLoadBalancerTargetGroupsInput{
+		AutoScalingGroupName: aws.String(asgName),
+	})
+	if err != nil {
+		t.Fatalf("failed to describe load balancer target groups: %s", err)
+	}
+	return out.LoadBalancerTargetGroups
 }
 
 type Fly struct {
@@ -142,7 +173,7 @@ func (f *Fly) Setup(t *testing.T, username, password string) {
 	}
 }
 
-func (f *Fly) Workers(t *testing.T) []*concourseWorker {
+func (f *Fly) Workers(t *testing.T) []*ConcourseWorker {
 	cmd := exec.Command(f.bin, "--target", f.Target, "workers", "--json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -151,7 +182,7 @@ func (f *Fly) Workers(t *testing.T) []*concourseWorker {
 
 	r := bytes.NewReader(out)
 
-	var workers []*concourseWorker
+	var workers []*ConcourseWorker
 	err = json.NewDecoder(r).Decode(&workers)
 	if err != nil {
 		t.Fatalf("failed to deserialize workers: %s", err)
@@ -159,7 +190,7 @@ func (f *Fly) Workers(t *testing.T) []*concourseWorker {
 	return workers
 }
 
-type concourseWorker struct {
+type ConcourseWorker struct {
 	Platform string `json:"platform"`
 	State    string `json:"state"`
 }

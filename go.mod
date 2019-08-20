@@ -3,7 +3,7 @@ module github.com/telia-oss/terraform-aws-concourse/v3
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.23.3 // indirect
+	github.com/aws/aws-sdk-go v1.23.3
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
