@@ -17,6 +17,10 @@ output "security_group_id" {
   value = module.atc.security_group_id
 }
 
+output "log_group_name" {
+  value = aws_cloudwatch_log_group.atc.name
+}
+
 output "external_lb_arn" {
   value = module.external_lb.arn
 }

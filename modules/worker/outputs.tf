@@ -17,3 +17,10 @@ output "security_group_id" {
   value = module.worker.security_group_id
 }
 
+output "log_group_name" {
+  value = aws_cloudwatch_log_group.worker.name
+}
+
+output "lifecycled_log_group_name" {
+  value = aws_cloudwatch_log_group.worker_lifecycled.name
+}

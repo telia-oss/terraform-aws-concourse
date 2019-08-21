@@ -91,3 +91,16 @@ resource "aws_security_group_rule" "atc_ingress_postgres" {
   to_port                  = module.postgres.port
   source_security_group_id = module.concourse_atc.security_group_id
 }
+
+module "concourse_dashboard" {
+  source = "../../modules/dashboard"
+
+  name_prefix           = var.name_prefix
+  atc_asg_name          = module.concourse_atc.asg_id
+  atc_log_group_name    = module.concourse_atc.log_group_name
+  worker_asg_name       = module.concourse_worker.asg_id
+  worker_log_group_name = module.concourse_worker.log_group_name
+  internal_lb_arn       = module.concourse_atc.internal_lb_arn
+  external_lb_arn       = module.concourse_atc.external_lb_arn
+  rds_cluster_id        = module.postgres.id
+}

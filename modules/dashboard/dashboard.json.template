@@ -1,0 +1,334 @@
+{
+    "widgets": [
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/EC2",
+                        "CPUUtilization",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "ATC"
+                        }
+                    ],
+                    [
+                        "AWS/EC2",
+                        "CPUUtilization",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Worker"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "CPU utilization",
+                "period": ${period}
+            }
+        },
+        {
+            "type": "metric",
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [],
+                "view": "timeSeries",
+                "region": "${region}",
+                "title": "PLACEHOLDER",
+                "period": ${period},
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 0,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/AutoScaling",
+                        "GroupTotalInstances",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "ATC"
+                        }
+                    ],
+                    [
+                        "AWS/AutoScaling",
+                        "GroupTotalInstances",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Worker"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "region": "${region}",
+                "title": "Instance count",
+                "period": ${period},
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 18,
+            "y": 0,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/Logs",
+                        "IncomingLogEvents",
+                        "LogGroupName",
+                        "${atc_log_group_name}",
+                        {
+                            "label": "ATC"
+                        }
+                    ],
+                    [
+                        "AWS/Logs",
+                        "IncomingLogEvents",
+                        "LogGroupName",
+                        "${worker_log_group_name}",
+                        {
+                            "label": "Worker"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "Log events (ATC/Worker)",
+                "period": ${period}
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/EC2",
+                        "NetworkIn",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "Inbound"
+                        }
+                    ],
+                    [
+                        "AWS/EC2",
+                        "NetworkOut",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "Outbound"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "ATC network traffic (ENI in/out)",
+                "period": ${period}
+            }
+        },
+        {
+            "type": "metric",
+            "x": 6,
+            "y": 9,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/EC2",
+                        "NetworkIn",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Inbound"
+                        }
+                    ],
+                    [
+                        "AWS/EC2",
+                        "NetworkOut",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Outbound"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "Worker network traffic (ENI in/out)",
+                "period": ${period}
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 9,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/ApplicationELB",
+                        "ProcessedBytes",
+                        "LoadBalancer",
+                        "${external_lb}",
+                        {
+                            "label": "External ALB"
+                        }
+                    ],
+                    [
+                        "AWS/NetworkELB",
+                        "ProcessedBytes",
+                        "LoadBalancer",
+                        "${internal_lb}",
+                        {
+                            "label": "Internal NLB"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "period": ${period},
+                "title": "Internal/external LB (processed bytes)"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 18,
+            "y": 9,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    %{ if length(nat_gateway_metrics) > 0 }
+                    [
+                        {
+                            "expression": "SUM(${jsonencode(nat_inbound_ids)})",
+                            "label": "Inbound",
+                            "id": "inbound"
+                        }
+                    ],
+                    [
+                        {
+                            "expression": "SUM(${jsonencode(nat_outbound_ids)})",
+                            "label": "Outbound",
+                            "id": "outbound"
+                        }
+                    ],
+                    ${jsonencode(nat_gateway_metrics)}
+                    %{ endif }
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "NAT Gateway (in/out)",
+                "period": ${period}
+            }
+        %{ if rds_cluster_id == "" }
+        }
+        %{ else }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 18,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/RDS",
+                        "DatabaseConnections",
+                        "DBClusterIdentifier",
+                        "${rds_cluster_id}",
+                        {
+                            "stat": "Maximum",
+                            "period": ${period}
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "RDS Database connections (max)"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 6,
+            "y": 18,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/RDS",
+                        "CPUUtilization",
+                        "DBClusterIdentifier",
+                        "${rds_cluster_id}",
+                        {
+                            "period": ${period}
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "RDS CPU Utilisation"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 18,
+            "width": 6,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/RDS",
+                        "FreeableMemory",
+                        "DBClusterIdentifier",
+                        "${rds_cluster_id}",
+                        {
+                            "stat": "Minimum",
+                            "period": ${period}
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${region}",
+                "title": "RDS Freeable memory (min)"
+            }
+        }
+        %{ endif }
+    ]
+}
