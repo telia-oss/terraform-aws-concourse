@@ -251,6 +251,9 @@
                 "title": "NAT Gateway (in/out)",
                 "period": ${period}
             }
+        %{ if rds_cluster_id == "" }
+        }
+        %{ else }
         },
         {
             "type": "metric",
@@ -326,5 +329,6 @@
                 "title": "RDS Freeable memory (min)"
             }
         }
+        %{ endif }
     ]
 }
