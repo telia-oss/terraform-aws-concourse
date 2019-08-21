@@ -22,6 +22,7 @@ func TestModule(t *testing.T) {
 		description string
 		directory   string
 		name        string
+		password    string
 		region      string
 		expected    concourse.Expectations
 	}{
@@ -29,6 +30,7 @@ func TestModule(t *testing.T) {
 			description: "basic example",
 			directory:   "../examples/basic",
 			name:        fmt.Sprintf("concourse-basic-test-%s", random.UniqueId()),
+			password:    random.UniqueId(),
 			region:      "eu-west-1",
 			expected: concourse.Expectations{
 				Version:       "5.1.0",
@@ -47,7 +49,6 @@ func TestModule(t *testing.T) {
 						`Environment="CONCOURSE_GITHUB_CLIENT_SECRET=sm:///concourse-deployment/github-oauth-client-secret"`,
 						`Environment="CONCOURSE_MAIN_TEAM_GITHUB_USER=itsdalmo"`,
 						`Environment="CONCOURSE_MAIN_TEAM_GITHUB_TEAM=telia-oss:concourse-owners"`,
-						`Environment="CONCOURSE_ADD_LOCAL_USER=sm:///concourse-deployment/admin-user"`,
 						`Environment="CONCOURSE_MAIN_TEAM_LOCAL_USER=admin"`,
 						`Environment="CONCOURSE_POSTGRES_PORT=5439"`,
 						`Environment="CONCOURSE_POSTGRES_USER=superuser"`,
@@ -118,9 +119,10 @@ func TestModule(t *testing.T) {
 
 				Vars: map[string]interface{}{
 					// aws_db_subnet_group requires a lowercase name.
-					"name_prefix": strings.ToLower(tc.name),
-					"packer_ami":  amiID,
-					"region":      tc.region,
+					"name_prefix":              strings.ToLower(tc.name),
+					"concourse_admin_password": tc.password,
+					"packer_ami":               amiID,
+					"region":                   tc.region,
 				},
 
 				EnvVars: map[string]string{
@@ -135,6 +137,8 @@ func TestModule(t *testing.T) {
 				terraform.Output(t, options, "endpoint"),
 				terraform.Output(t, options, "atc_asg_id"),
 				terraform.Output(t, options, "worker_asg_id"),
+				"admin",
+				tc.password,
 				tc.region,
 				tc.expected,
 			)
