@@ -50,7 +50,7 @@ variable "nat_gateway_ids" {
 variable "period" {
   description = "The default period, in seconds, for all metrics in this widget. The period is the length of time represented by one data point on the graph."
   type        = number
-  default     = 300
+  default     = 60
 }
 
 
