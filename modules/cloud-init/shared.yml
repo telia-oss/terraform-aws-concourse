@@ -1,24 +1,66 @@
 #cloud-config
 write_files:
-  - path: "/etc/awslogs/awscli.template"
+  - path: "/opt/aws/amazon-cloudwatch-agent.json"
     permissions: "0644"
     owner: "root"
     content: |
-      [plugins]
-      cwlogs = cwlogs
-      [default]
-      region = ${region}
-  - path: "/etc/awslogs/awslogs.template"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      [general]
-      state_file = /var/lib/awslogs/agent-state
-
-      [/var/log/concourse.log]
-      file = /var/log/concourse.log
-      log_group_name = ${log_group_name}
-      log_stream_name = {instance_id}
+      {
+          "agent": {
+              "region": "${region}",
+              "logfile": "/var/log/amazon-cloudwatch-agent.log",
+              "metrics_collection_interval": 60
+          },
+          "metrics": {
+              "namespace": "${cloudwatch_namespace}",
+              "append_dimensions": {
+                  "InstanceId": "$${aws:InstanceId}",
+                  "AutoScalingGroupName": "$${aws:AutoScalingGroupName}"
+              },
+              "aggregation_dimensions": [
+                  [
+                      "InstanceId"
+                  ],
+                  [
+                      "AutoScalingGroupName"
+                  ]
+              ],
+              "metrics_collected": {
+                  "disk": {
+                      "resources": [
+                          "*"
+                      ],
+                      "measurement": [
+                          "disk_used_percent"
+                      ]
+                  },
+                  "swap": {
+                      "measurement": [
+                          "swap_used_percent"
+                      ]
+                  },
+                  "mem": {
+                      "measurement": [
+                          "mem_used_percent"
+                      ]
+                  }
+              }
+          },
+          "logs": {
+              "logs_collected": {
+                  "files": {
+                      "collect_list": [
+                          {
+                              "file_path": "/var/log/concourse.log*",
+                              "log_group_name": "${log_group_name}",
+                              "log_stream_name": "{instance_id}",
+                              "timezone": "UTC"
+                          }
+                      ]
+                  }
+              },
+              "log_stream_name": "{instance_id}/unknown-log-stream"
+          }
+      }
   - path: "/etc/systemd/system/node_exporter.service"
     permissions: "0644"
     owner: "root"
@@ -67,10 +109,9 @@ write_files:
       }
 runcmd:
   - |
-    cp /etc/awslogs/awscli.template /etc/awslogs/awscli.conf
-    cp /etc/awslogs/awslogs.template /etc/awslogs/awslogs.conf
+    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent.json
   - |
     systemctl enable concourse-logging.service --now
-    systemctl enable awslogsd.service --now
+    systemctl enable amazon-cloudwatch-agent.service --now
     systemctl enable concourse.service --now
     %{if prometheus_enabled } systemctl enable node_exporter.service --now %{ endif }

@@ -78,9 +78,10 @@ module "atc" {
 
 locals {
   shared_cloud_init = templatefile("${path.module}/../cloud-init/shared.yml", {
-    region             = data.aws_region.current.name
-    log_group_name     = aws_cloudwatch_log_group.atc.name
-    prometheus_enabled = var.prometheus_enabled
+    region               = data.aws_region.current.name
+    cloudwatch_namespace = var.name_prefix
+    log_group_name       = aws_cloudwatch_log_group.atc.name
+    prometheus_enabled   = var.prometheus_enabled
   })
 
   atc_cloud_init = templatefile("${path.module}/../cloud-init/atc.yml", {
@@ -136,6 +137,21 @@ data "aws_iam_policy_document" "atc" {
   statement {
     effect = "Allow"
 
+    resources = ["*"]
+
+    actions = [
+      "cloudwatch:PutMetricData",
+      "cloudwatch:GetMetricStatistics",
+      "cloudwatch:ListMetrics",
+      "logs:DescribeLogStreams",
+      "logs:DescribeLogGroups",
+      "ec2:DescribeTags",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
     resources = [
       aws_cloudwatch_log_group.atc.arn,
     ]
@@ -147,16 +163,13 @@ data "aws_iam_policy_document" "atc" {
     ]
   }
 
+  # Used for cfn-signal
   statement {
     effect = "Allow"
 
     resources = ["*"]
 
     actions = [
-      "cloudwatch:PutMetricData",
-      "cloudwatch:GetMetricStatistics",
-      "cloudwatch:ListMetrics",
-      "ec2:DescribeTags",
       "elasticloadbalancing:DescribeTargetHealth",
     ]
   }

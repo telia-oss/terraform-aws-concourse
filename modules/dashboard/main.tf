@@ -36,6 +36,7 @@ locals {
 resource "aws_cloudwatch_dashboard" "main" {
   dashboard_name = var.name_prefix
   dashboard_body = templatefile("${path.module}/dashboard.json.template", {
+    cloudwatch_namespace  = var.name_prefix
     atc_asg_name          = var.atc_asg_name
     atc_log_group_name    = var.atc_log_group_name
     worker_asg_name       = var.worker_asg_name
