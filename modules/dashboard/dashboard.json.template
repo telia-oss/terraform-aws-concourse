@@ -39,12 +39,65 @@
             "x": 6,
             "y": 0,
             "width": 6,
-            "height": 9,
+            "height": 6,
             "properties": {
-                "metrics": [],
+                "metrics": [
+                    [
+                        "${cloudwatch_namespace}",
+                        "mem_used_percent",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "ATC"
+                        }
+                    ],
+                    [
+                        "${cloudwatch_namespace}",
+                        "mem_used_percent",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Worker"
+                        }
+                    ]
+                ],
                 "view": "timeSeries",
                 "region": "${region}",
-                "title": "PLACEHOLDER",
+                "title": "Memory usage",
+                "period": ${period},
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 6,
+            "y": 6,
+            "width": 6,
+            "height": 3,
+            "properties": {
+                "metrics": [
+                    [
+                        "${cloudwatch_namespace}",
+                        "swap_used_percent",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "ATC"
+                        }
+                    ],
+                    [
+                        "${cloudwatch_namespace}",
+                        "swap_used_percent",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Worker"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "region": "${region}",
+                "title": "Swap usage",
                 "period": ${period},
                 "stacked": false
             }
@@ -58,8 +111,8 @@
             "properties": {
                 "metrics": [
                     [
-                        "AWS/AutoScaling",
-                        "GroupTotalInstances",
+                        "${cloudwatch_namespace}",
+                        "disk_used_percent",
                         "AutoScalingGroupName",
                         "${atc_asg_name}",
                         {
@@ -67,8 +120,8 @@
                         }
                     ],
                     [
-                        "AWS/AutoScaling",
-                        "GroupTotalInstances",
+                        "${cloudwatch_namespace}",
+                        "disk_used_percent",
                         "AutoScalingGroupName",
                         "${worker_asg_name}",
                         {
@@ -78,7 +131,7 @@
                 ],
                 "view": "timeSeries",
                 "region": "${region}",
-                "title": "Instance count",
+                "title": "Disk usage",
                 "period": ${period},
                 "stacked": false
             }
@@ -88,7 +141,7 @@
             "x": 18,
             "y": 0,
             "width": 6,
-            "height": 9,
+            "height": 6,
             "properties": {
                 "metrics": [
                     [
@@ -115,6 +168,40 @@
                 "region": "${region}",
                 "title": "Log events (ATC/Worker)",
                 "period": ${period}
+            }
+        },
+        {
+            "type": "metric",
+            "x": 18,
+            "y": 6,
+            "width": 6,
+            "height": 3,
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/AutoScaling",
+                        "GroupTotalInstances",
+                        "AutoScalingGroupName",
+                        "${atc_asg_name}",
+                        {
+                            "label": "ATC"
+                        }
+                    ],
+                    [
+                        "AWS/AutoScaling",
+                        "GroupTotalInstances",
+                        "AutoScalingGroupName",
+                        "${worker_asg_name}",
+                        {
+                            "label": "Worker"
+                        }
+                    ]
+                ],
+                "view": "timeSeries",
+                "region": "${region}",
+                "title": "Instance count",
+                "period": ${period},
+                "stacked": false
             }
         },
         {

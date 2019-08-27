@@ -56,9 +56,10 @@ module "worker" {
 
 locals {
   shared_cloud_init = templatefile("${path.module}/../cloud-init/shared.yml", {
-    region             = data.aws_region.current.name
-    log_group_name     = aws_cloudwatch_log_group.worker.name
-    prometheus_enabled = var.prometheus_enabled
+    region               = data.aws_region.current.name
+    cloudwatch_namespace = var.name_prefix
+    log_group_name       = aws_cloudwatch_log_group.worker.name
+    prometheus_enabled   = var.prometheus_enabled
   })
 
   worker_cloud_init = templatefile("${path.module}/../cloud-init/worker.yml", {
@@ -104,6 +105,21 @@ data "aws_iam_policy_document" "worker" {
   statement {
     effect = "Allow"
 
+    resources = ["*"]
+
+    actions = [
+      "cloudwatch:PutMetricData",
+      "cloudwatch:GetMetricStatistics",
+      "cloudwatch:ListMetrics",
+      "logs:DescribeLogStreams",
+      "logs:DescribeLogGroups",
+      "ec2:DescribeTags",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
     resources = [
       aws_cloudwatch_log_group.worker.arn,
       aws_cloudwatch_log_group.worker_lifecycled.arn,
@@ -113,19 +129,6 @@ data "aws_iam_policy_document" "worker" {
       "logs:CreateLogStream",
       "logs:CreateLogGroup",
       "logs:PutLogEvents",
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-
-    resources = ["*"]
-
-    actions = [
-      "cloudwatch:PutMetricData",
-      "cloudwatch:GetMetricStatistics",
-      "cloudwatch:ListMetrics",
-      "ec2:DescribeTags",
     ]
   }
 
@@ -145,18 +148,6 @@ data "aws_iam_policy_document" "worker" {
   statement {
     effect = "Allow"
 
-    actions = [
-      "logs:DescribeLogStreams",
-    ]
-
-    resources = [
-      "*",
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-
     resources = ["arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:lifecycled-*"]
 
     actions = [
@@ -164,7 +155,6 @@ data "aws_iam_policy_document" "worker" {
     ]
   }
 
-  # TODO: See if this can be scoped to ASG's with a given prefix?
   statement {
     effect = "Allow"
 
