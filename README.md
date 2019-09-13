@@ -1,6 +1,6 @@
 ## Concourse CI
 
-[![Build Status](https://travis-ci.com/telia-oss/terraform-aws-concourse.svg?branch=master)](https://travis-ci.com/telia-oss/terraform-aws-concourse)
+[![workflow](https://github.com/telia-oss/terraform-aws-concourse/workflows/workflow/badge.svg)](https://github.com/telia-oss/terraform-aws-concourse/actions)
 
 A Terraform module for deploying Concourse CI.
 
