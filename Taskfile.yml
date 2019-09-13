@@ -66,4 +66,10 @@ tasks:
     silent: true
     cmds:
     - go test -v ./... -timeout=1h
-    
+
+  ami:	
+    desc: Build the packer template to create a Concourse AMI.	
+    silent: true	
+    cmds:	
+    - packer validate -var="template_version={{.VERSION}}" packer/template.json	
+    - packer build -var="template_version={{.VERSION}}" packer/template.json
