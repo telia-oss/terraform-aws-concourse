@@ -98,6 +98,7 @@ locals {
     github_teams           = var.github_teams
     prometheus_enabled     = var.prometheus_enabled
     prometheus_bind_port   = var.prometheus_port
+    placement_strategy     = var.placement_strategy
     concourse_web_host     = "${lower(var.web_protocol)}://${var.domain != "" ? var.domain : module.external_lb.dns_name}:${var.web_port}"
     postgres_host          = var.postgres_host
     postgres_port          = var.postgres_port

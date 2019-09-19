@@ -176,6 +176,12 @@ variable "prometheus_port" {
   default     = 9391
 }
 
+variable "placement_strategy" {
+  description = "Concourse container placement strategy."
+  type        = string
+  default     = "volume-locality"
+}
+
 variable "encryption_key" {
   description = "A 16 or 32 length key used to encrypt sensitive information before storing it in the database."
   type        = string
