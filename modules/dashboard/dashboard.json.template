@@ -381,6 +381,7 @@
                         "DBClusterIdentifier",
                         "${rds_cluster_id}",
                         {
+                            "stat": "Maximum",
                             "period": ${period}
                         }
                     ]
@@ -388,7 +389,7 @@
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "${region}",
-                "title": "RDS CPU Utilisation"
+                "title": "RDS CPU Utilisation (max)"
             }
         },
         {
