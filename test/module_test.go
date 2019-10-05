@@ -33,8 +33,8 @@ func TestModule(t *testing.T) {
 			password:    random.UniqueId(),
 			region:      "eu-west-1",
 			expected: concourse.Expectations{
-				Version:       "5.1.0",
-				WorkerVersion: "2.1",
+				Version:       "5.6.0",
+				WorkerVersion: "2.2",
 				ATCAutoscaling: asg.Expectations{
 					MinSize:         1,
 					MaxSize:         2,
