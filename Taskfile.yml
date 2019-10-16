@@ -73,3 +73,6 @@ tasks:
     cmds:
     - packer validate -var="template_version={{.VERSION}}" packer/template.json
     - packer build -var="template_version={{.VERSION}}" packer/template.json
+    vars:
+      VERSION:
+        sh: git describe --tags --candidates=1 --dirty
