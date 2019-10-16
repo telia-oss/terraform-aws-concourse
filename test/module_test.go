@@ -62,6 +62,7 @@ func TestModule(t *testing.T) {
 						`Environment="CONCOURSE_ENCRYPTION_KEY="`,
 						`Environment="CONCOURSE_OLD_ENCRYPTION_KEY="`,
 						`Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=eu-west-1"`,
+						`Environment="CONCOURSE_SECRET_CACHE_ENABLED=true"`,
 					},
 					IsGzippedUserData: true,
 				},

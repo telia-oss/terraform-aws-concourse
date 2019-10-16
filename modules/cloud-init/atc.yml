@@ -48,6 +48,7 @@ write_files:
       Environment="CONCOURSE_OLD_ENCRYPTION_KEY=${old_encryption_key}"
       Environment="CONCOURSE_AWS_SECRETSMANAGER_REGION=${region}"
       Environment="CONCOURSE_CONTAINER_PLACEMENT_STRATEGY=${placement_strategy}"
+      Environment="CONCOURSE_SECRET_CACHE_ENABLED=${secret_cache_enabled}"
 
       %{ if local_user != "" }Environment="CONCOURSE_ADD_LOCAL_USER=${local_user}"%{ endif }
       %{ if local_admin_user != "" }Environment="CONCOURSE_MAIN_TEAM_LOCAL_USER=${local_admin_user}"%{ endif }
