@@ -181,6 +181,12 @@ variable "placement_strategy" {
   default     = "volume-locality"
 }
 
+variable "secret_cache_enabled" {
+  description = "Enable Concourse secret cache."
+  type        = bool
+  default     = true
+}
+
 variable "encryption_key" {
   description = "A 16 or 32 length key used to encrypt sensitive information before storing it in the database."
   type        = string

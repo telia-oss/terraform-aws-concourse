@@ -37,7 +37,7 @@ func RunTestSuite(t *testing.T, endpoint, atcASGName, workerASGName, adminUser, 
 
 	// Wait for ATC to register as healthy in the target groups (max 10min wait)
 	sess := NewSession(t, region)
-	WaitForHealthyTargets(t, sess, atcASGName, 20*time.Second, 10*time.Minute)
+	WaitForHealthyTargets(t, sess, atcASGName, 1*time.Minute, 15*time.Minute)
 
 	info := GetConcourseInfo(t, endpoint)
 	assert.Equal(t, expected.Version, info.Version)
