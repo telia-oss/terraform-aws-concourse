@@ -27,7 +27,7 @@ write_files:
               "metrics_collected": {
                   "disk": {
                       "resources": [
-                          "*"
+                          "/"
                       ],
                       "measurement": [
                           "disk_used_percent"
