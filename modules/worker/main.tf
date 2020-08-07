@@ -72,6 +72,7 @@ locals {
     worker_key                = file("${var.concourse_keys}/worker_key")
     pub_worker_key            = file("${var.concourse_keys}/worker_key.pub")
     pub_tsa_host_key          = file("${var.concourse_keys}/tsa_host_key.pub")
+    limitNOFILE               = var.ulimit_no_file
     lifecycle_topic           = aws_sns_topic.worker.arn
     lifecycled_log_group_name = aws_cloudwatch_log_group.worker_lifecycled.name
   })
@@ -217,4 +218,3 @@ data "aws_iam_policy_document" "asg_permissions" {
     ]
   }
 }
-
