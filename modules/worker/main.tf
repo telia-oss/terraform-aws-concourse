@@ -34,7 +34,7 @@ resource "aws_security_group_rule" "atc_ingress_garden" {
 
 module "worker" {
   source  = "telia-oss/asg/aws"
-  version = "3.2.0"
+  version = "4.0.0"
 
   name_prefix          = "${var.name_prefix}-worker"
   user_data_base64     = data.template_cloudinit_config.worker.rendered
