@@ -9,7 +9,7 @@ locals {
       "AWS/NATGateway",
       "BytesInFromDestination",
       "NatGatewayId",
-      "${id}",
+      id,
       {
         stat    = "Average"
         id      = "nat-${i + 1}-inbound"
@@ -23,7 +23,7 @@ locals {
       "AWS/NATGateway",
       "BytesInFromSource",
       "NatGatewayId",
-      "${id}",
+      id,
       {
         stat    = "Average"
         id      = "nat-${i + 1}-outbound"
