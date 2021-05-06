@@ -4,7 +4,8 @@ variable "name_prefix" {
 }
 
 variable "packer_ami" {
-  type = string
+  type    = string
+  default = "ami-063d4ab14480ac177"
 }
 
 variable "concourse_admin_password" {
