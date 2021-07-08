@@ -83,6 +83,12 @@ variable "worker_team" {
   default     = ""
 }
 
+variable "ulimit_no_file" {
+  description = "Number of File Descriptors (default is 4096:8192, softlimit:hardlimit)"
+  type        = string
+  default     = "4096:8192"
+}
+
 variable "log_level" {
   description = "Minimum level of logs to see (options: debug|info|error|fatal)."
   type        = string
@@ -94,4 +100,3 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
-

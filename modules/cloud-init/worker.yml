@@ -31,6 +31,8 @@ write_files:
       TimeoutStartSec=5m
       TimeoutStopSec=1h
       KillMode=process
+      %{ if limitNOFILE != "" }LimitNOFILE=${limitNOFILE}%{ else }LimitNOFILE=4096:8192%{ endif }
+
 
       Environment="CONCOURSE_TEAM=${worker_team}"
       Environment="CONCOURSE_BIND_IP=0.0.0.0"
@@ -108,4 +110,3 @@ runcmd:
   - |
     /usr/local/scripts/cloudformation-signal.sh
     /opt/aws/bin/cfn-signal -e $? --stack ${stack_name} --resource AutoScalingGroup --region ${region}
-
