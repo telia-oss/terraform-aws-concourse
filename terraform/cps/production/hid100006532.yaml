@@ -1,0 +1,17 @@
+---
+- system_name: "asdasd"
+  prj_name: "asdasd"
+  requester: "utu417"
+  contactEmail: "asdas@asda.cc"
+  useInterconnect: True
+  labels:
+    system: "hid100006532"
+    opexWBS: "asdas"
+    budget: 444
+    sapAccount: "rrrr"
+    applicationRole: "DEV"
+  apisEnabled:
+    - acceleratedmobilepageurl.googleapis.com
+    - accessapproval.googleapis.com
+    - accesscontextmanager.googleapis.com
+    
